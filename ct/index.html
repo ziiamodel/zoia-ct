@@ -626,6 +626,40 @@
         .audio-element {
             display: none;
         }
+
+
+
+
+
+/* googlelogin */
+/* Google button styles */
+.google-signin-btn {
+  width: 100%;
+  background: white;
+  color: #262626;
+  border: 1px solid #dbdbdb;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.google-signin-btn:hover {
+  background: #f8f8f8;
+}
+
+.google-signin-btn img {
+  width: 18px;
+  margin-right: 12px;
+}
+
+
+        
     </style>
 </head>
 <body>
@@ -648,6 +682,12 @@
         <input type="password" id="loginPassword" placeholder="Password" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 12px; border-radius: 3px; width: 94%;">
         <button onclick="login()" style="width: 100%; background: #0095f6; color: white; border: none; padding: 7px; border-radius: 4px; font-weight: 600;">Log In</button>
         <div class="divider">OR</div>
+
+  <button onclick="signInWithGoogle()" style="width: 100%; background: white; color: #262626; border: 1px solid #dbdbdb; padding: 7px; border-radius: 4px; font-weight: 600; display: flex; align-items: center; justify-content: center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" style="width: 18px; margin-right: 8px;">
+    Continue with Google
+  </button>
+        
         <a href="reset.html" style="color: #00376b; font-size: 15px; text-decoration: none; margin-top: 12px; display: inline-block;">Forgot password?</a>
     </div>
 
@@ -725,6 +765,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+
+    
 <script>
     // Firebase Configuration
     const firebaseConfig = {
@@ -745,27 +789,148 @@
     let typingTimeout;
     let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // Authentication State Listener
-    auth.onAuthStateChanged(user => {
-        const loadingOverlay = document.getElementById("loadingOverlay");
-        const authBox = document.getElementById("authBox");
+
+
+
+
+// Initialize Google provider
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// Google Sign-In function
+function signInWithGoogle() {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  loadingOverlay.style.display = "flex";
+  
+  auth.signInWithPopup(googleProvider)
+    .then((result) => {
+      // This gives you a Google Access Token
+      const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      
+      // The signed-in user info
+      const user = result.user;
+      
+      // Check if this is a new user
+      if (result.additionalUserInfo.isNewUser) {
+        // Set the fanName from Google profile
+        fanName = user.displayName || "Google User";
         
-        if (user) {
-            db.ref("users/" + user.uid).once("value").then(snapshot => {
-                fanName = snapshot.val().fanName;
-                launchChat();
-                loadingOverlay.style.display = "none";
-                
-                // Focus input after small delay when chat launches
-                setTimeout(() => {
-                    document.getElementById("messageInput").focus();
-                }, 300);
-            });
-        } else {
-            authBox.style.display = "block";
-            loadingOverlay.style.display = "none";
-        }
+        // Save user to database
+        return db.ref("users/" + user.uid).set({ 
+          fanName: fanName,
+          email: user.email,
+          provider: "google"
+        });
+      }
+    })
+    .catch((error) => {
+      loadingOverlay.style.display = "none";
+      
+      // Handle Errors here
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      
+      // The email of the user's account used
+      const email = error.email;
+      
+      // The firebase.auth.AuthCredential type that was used
+      const credential = firebase.auth.GoogleAuthProvider.credentialFromError(error);
+      
+      showError("Google login failed: " + (errorMessage || "Unknown error"));
     });
+}
+
+
+
+
+
+
+
+
+
+
+
+    
+auth.onAuthStateChanged(user => {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const authBox = document.getElementById("authBox");
+  
+  if (user) {
+    db.ref("users/" + user.uid).once("value").then(snapshot => {
+      if (snapshot.exists()) {
+        fanName = snapshot.val().fanName;
+      } else {
+        // For new Google users who weren't properly saved
+        fanName = user.displayName || "Google User";
+        db.ref("users/" + user.uid).set({ 
+          fanName: fanName,
+          email: user.email,
+          provider: "google"
+        });
+      }
+      launchChat();
+      loadingOverlay.style.display = "none";
+      
+      setTimeout(() => {
+        document.getElementById("messageInput").focus();
+      }, 300);
+    });
+  } else {
+    authBox.style.display = "block";
+    loadingOverlay.style.display = "none";
+  }
+});
+
+
+
+
+
+function signInWithGoogle() {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  loadingOverlay.style.display = "flex";
+  
+  // Check if mobile device
+  if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    auth.signInWithRedirect(googleProvider);
+  } else {
+    auth.signInWithPopup(googleProvider)
+      .then((result) => {
+        // ... existing code
+      })
+      .catch((error) => {
+        // ... existing error handling
+      });
+  }
+}
+
+// Add this to handle redirect result
+function handleRedirectResult() {
+  auth.getRedirectResult()
+    .then((result) => {
+      if (result.user) {
+        // Handle successful redirect sign-in
+        const user = result.user;
+        fanName = user.displayName || "Google User";
+        
+        return db.ref("users/" + user.uid).set({ 
+          fanName: fanName,
+          email: user.email,
+          provider: "google"
+        });
+      }
+    })
+    .catch((error) => {
+      showError("Google login failed: " + error.message);
+    });
+}
+
+// Call this when page loads
+document.addEventListener("DOMContentLoaded", handleRedirectResult);
+
+
+
+
+    
 
     // Authentication Functions
     function toggleAuth(type) {
