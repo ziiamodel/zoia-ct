@@ -1414,6 +1414,219 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+
+
+
+
+
+
+
+
+
+// ====================== FCM NOTIFICATION SETUP ====================== //
+
+// Initialize Firebase Messaging
+const messaging = firebase.messaging();
+
+// Notification permission and token management
+async function setupFCM() {
+  try {
+    // Check for service worker support
+    if (!('serviceWorker' in navigator)) {
+      console.warn('Service workers not supported');
+      return;
+    }
+
+    // Register service worker
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    console.log('Service Worker registered with scope:', registration.scope);
+
+    // Request notification permission
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('Notification permission not granted');
+      return;
+    }
+
+    // Get FCM token
+    const currentToken = await messaging.getToken({
+      vapidKey: 'BLHlVv4j...' // Replace with your VAPID key from Firebase Console
+    });
+
+    if (currentToken) {
+      console.log('FCM Token:', currentToken);
+      // Save token to database
+      const user = auth.currentUser;
+      if (user) {
+        await db.ref(`users/${user.uid}/fcmToken`).set(currentToken);
+      }
+    } else {
+      console.log('No registration token available.');
+    }
+
+    // Listen for token refresh
+    messaging.onTokenRefresh(async () => {
+      console.log('FCM Token refreshed');
+      const newToken = await messaging.getToken();
+      const user = auth.currentUser;
+      if (user) {
+        await db.ref(`users/${user.uid}/fcmToken`).set(newToken);
+      }
+    });
+
+  } catch (error) {
+    console.error('FCM setup error:', error);
+  }
+}
+
+// Handle incoming messages when app is in foreground
+messaging.onMessage((payload) => {
+  console.log('Foreground message received:', payload);
+  
+  // Show in-app notification UI
+  showInAppNotification({
+    title: payload.notification?.title || "New Message",
+    body: payload.notification?.body,
+    image: payload.notification?.image,
+    data: payload.data
+  });
+});
+
+// Custom in-app notification UI
+function showInAppNotification(notification) {
+  const notificationDiv = document.createElement('div');
+  notificationDiv.className = 'in-app-notification';
+  notificationDiv.style.position = 'fixed';
+  notificationDiv.style.bottom = '20px';
+  notificationDiv.style.right = '20px';
+  notificationDiv.style.width = '300px';
+  notificationDiv.style.padding = '15px';
+  notificationDiv.style.backgroundColor = '#ffffff';
+  notificationDiv.style.borderRadius = '10px';
+  notificationDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+  notificationDiv.style.zIndex = '9999';
+  notificationDiv.style.display = 'flex';
+  notificationDiv.style.gap = '12px';
+  notificationDiv.style.animation = 'fadeIn 0.3s ease-out';
+  
+  notificationDiv.innerHTML = `
+    <img src="${notification.image || '/icon-512.png'}" 
+         style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+    <div style="flex: 1;">
+      <div style="font-weight: 600; margin-bottom: 4px;">${notification.title}</div>
+      <div style="font-size: 14px; color: #555;">${notification.body || ''}</div>
+    </div>
+    <button class="close-notif" 
+            style="background: none; border: none; cursor: pointer; color: #999;">
+      &times;
+    </button>
+  `;
+
+  // Add to DOM
+  document.body.appendChild(notificationDiv);
+
+  // Auto-remove after 5 seconds
+  const autoRemove = setTimeout(() => {
+    notificationDiv.style.animation = 'fadeOut 0.3s ease-out';
+    setTimeout(() => notificationDiv.remove(), 300);
+  }, 5000);
+
+  // Manual close button
+  notificationDiv.querySelector('.close-notif').addEventListener('click', () => {
+    clearTimeout(autoRemove);
+    notificationDiv.style.animation = 'fadeOut 0.3s ease-out';
+    setTimeout(() => notificationDiv.remove(), 300);
+  });
+
+  // Click to open chat
+  notificationDiv.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('close-notif')) {
+      window.location.href = notification.data?.url || '/';
+    }
+  });
+}
+
+// Add these styles to your <head>
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); }
+  }
+`;
+document.head.appendChild(style);
+
+// ====================== INTEGRATION WITH EXISTING CODE ====================== //
+
+// Call setupFCM after successful authentication
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    setupFCM();
+    
+    // Set up presence tracking (for offline notifications)
+    setupPresenceTracking(user.uid);
+  }
+});
+
+// Presence tracking for offline notifications
+function setupPresenceTracking(uid) {
+  const userStatusRef = db.ref(`/status/${uid}`);
+  
+  const isOffline = {
+    state: 'offline',
+    last_changed: firebase.database.ServerValue.TIMESTAMP,
+  };
+  
+  const isOnline = {
+    state: 'online',
+    last_changed: firebase.database.ServerValue.TIMESTAMP,
+  };
+
+  db.ref('.info/connected').on('value', (snapshot) => {
+    if (snapshot.val() === false) return;
+    
+    userStatusRef.onDisconnect().set(isOffline).then(() => {
+      userStatusRef.set(isOnline);
+    });
+  });
+}
+
+// Modify your sendMessage function to handle notifications
+async function sendMessage() {
+  const msgInput = document.getElementById('messageInput');
+  const msg = msgInput.value.trim();
+  
+  if (!msg) return;
+
+  try {
+    const messageRef = await db.ref(`chats/${fanName}`).push({
+      sender: "fan",
+      text: msg,
+      timestamp: Date.now(),
+      status: "sent"
+    });
+    
+    await messageRef.update({ status: "delivered" });
+    msgInput.value = "";
+    
+    // Scroll to bottom
+    setTimeout(() => {
+      const messagesEl = document.getElementById('messages');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }, 50);
+    
+  } catch (error) {
+    console.error('Error sending message:', error);
+    showError('Failed to send message');
+  }
+}
+
+  
 </script>
 </body>
 </html>
