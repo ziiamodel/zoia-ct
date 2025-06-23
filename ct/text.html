@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+
+  <!-- Google Analytics Tracking Code -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2CVFG1FH7S"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-2CVFG1FH7S'); // Replace with your Measurement ID
+  </script>
+  <!-- End Google Analytics -->
+
+
+
+
+
+
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ziia Chat</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #fafafa;
+        }
+
+        .login-container, .register-container {
+            max-width: 400px;
+            margin: 50px auto;
+            border-radius: 16px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-header {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            color: #8e8e8e;
+            border-bottom: 1px solid #dbdbdb;
+        }
+
+        .tab-button.active {
+            color: #0095f6;
+            border-bottom: 2px solid #0095f6;
+        }
+
+        input {
+            width: 94%;
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #dbdbdb;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            margin: 12px 0;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #0095f6;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .chat-window {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #fafafa;
+        }
+
+        .chat-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0px 4px;
+            border-bottom: 1px solid #dbdbdb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .chat-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header-left img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .chat-header-left .name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #262626;
+        }
+
+        .chat-header-left .status {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: #262626;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #menuDropdown {
+            display: none;
+            position: absolute;
+            right: 16px;
+            top: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            z-index: 200;
+        }
+
+        #menuDropdown div {
+            padding: 12px 24px;
+            color: #262626;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(219, 219, 219, 0.5);
+        }
+
+        #menuDropdown div:last-child {
+            border-bottom: none;
+        }
+
+        #menuDropdown div:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+        }
+
+        .message {
+            position: relative;
+            max-width: 70%;
+            margin: 8px 0;
+            padding: 12px 16px;
+            word-wrap: break-word;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .sent {
+            background: #efefef;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            color: #262626;
+        }
+
+        .received {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03);
+        }
+
+        .timestamp {
+            font-size: 11px;
+            color: #8e8e8e;
+            margin-top: 1px;
+            margin-bottom: 13px;
+            text-align: right;
+        }
+
+        .status {
+            position: absolute;
+            bottom: 6px;
+            right: 12px;
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid #dbdbdb;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border: 1px solid #dbdbdb;
+            background: rgba(239, 239, 239, 0.5);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-input button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 8px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0095f6;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(250, 250, 250, 0.9);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .instagram-spinner {
+            width: 50px;
+            height: 50px;
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                #3897f0 0deg,
+                #27c4f5 120deg,
+                #a348a6 240deg,
+                #3897f0 360deg
+            );
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spin 1s linear infinite;
+        }
+
+        .instagram-spinner::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            background: #fafafa;
+            border-radius: 50%;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .profile-pic-wrapper {
+            position: relative;
+        }
+
+        .profile-pic-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: #dbdbdb;
+        }
+
+        .profile-pic-wrapper.online::after {
+            background: #0095f6;
+        }
+
+        #adminTyping {
+            color: #8e8e8e;
+            font-style: italic;
+            font-size: 13px;
+            padding: 0px 4px 6px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 16px;
+            margin-right: 10px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        .profile-pic-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: #596beb;
+        }
+
+        .login-container {
+            max-width: 350px;
+            margin: 0px auto;
+            padding: 20px 40px;
+            background: white;
+            border: 1px solid #dbdbdb;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 647px;
+        }
+
+        .tab-header {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .tab-button {
+            margin: 0 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #8e8e8e;
+        }
+
+        .tab-button.active {
+            color: #262626;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 10px 0 18px;
+            color: #8e8e8e;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #dbdbdb;
+            margin: 0 10px;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        @font-face {
+            font-family: 'Billabong';
+            src: url('https://fonts.cdnfonts.com/s/13949/Billabong.woff') format('woff');
+        }
+
+        /* Link Preview Popup Styles */
+        .link-preview-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .link-preview-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .link-preview-header {
+            padding: 12px 16px;
+            background: #f8f8f8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .link-preview-iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+        }
+
+        .link-preview-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .link-preview {
+            margin: 5px 0;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .link-domain {
+            color: #075e54;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 60%;
+        }
+
+        .view-btn {
+            background: #8d6eff;
+            color: white;
+            border: none;
+            padding: 9px 4px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+
+        .view-btn:hover {
+            background: #128C7E;
+        }
+
+        .image-preview {
+            margin: 8px 0;
+            max-width: 300px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chat-image {
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .chat-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* Image preview in chat */
+        .image-preview {
+            margin: 8px 0;
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .chat-image {
+            width: 130px;
+            height: auto;
+            transition: transform 0.2s;
+        }
+
+        .chat-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* Image popup styles */
+        .image-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #ccc;
+        }
+
+        /* Audio Player Styles */
+        .audio-player-container {
+            max-width: 300px;
+            margin: 8px 0;
+            background: #f8f8f8;
+            border-radius: 20px;
+            padding: 12px 16px;
+            position: relative;
+        }
+
+        .audio-player-ui {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .audio-play-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #0095f6;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            color: white;
+            padding: 0;
+            outline: none;
+        }
+
+        .audio-play-btn:hover {
+            background: #0077cc;
+        }
+
+        .audio-play-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .audio-progress-container {
+            flex-grow: 1;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .audio-progress-bar {
+            height: 100%;
+            background: #0095f6;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .audio-duration {
+            font-size: 12px;
+            color: #666;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Hide the actual audio element */
+        .audio-element {
+            display: none;
+        }
+
+
+
+
+
+/* googlelogin */
+/* Google button styles */
+.google-signin-btn {
+  width: 100%;
+  background: white;
+  color: #262626;
+  border: 1px solid #dbdbdb;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.google-signin-btn:hover {
+  background: #f8f8f8;
+}
+
+.google-signin-btn img {
+  width: 18px;
+  margin-right: 12px;
+}
+
+
+        
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+    <div class="instagram-spinner"></div>
+</div>
+
+<!-- Instagram-style Auth UI with original IDs/classes -->
+<div class="login-container" id="authBox" style="display: none;">
+    <div class="logo" style="font-size: 42px; font-weight: 600; margin: 22px auto 12px; font-family: 'Billabong', cursive;">ZIIA</div>
+
+    <div class="tab-header">
+        <div class="tab-button active" onclick="toggleAuth('login')">Log in</div>
+        <div class="tab-button" onclick="toggleAuth('register')">Sign up</div>
+    </div>
+
+    <div id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Phone number, username, or email" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 6px; border-radius: 3px; width: 94%;">
+        <input type="password" id="loginPassword" placeholder="Password" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 12px; border-radius: 3px; width: 94%;">
+        <button onclick="login()" style="width: 100%; background: #0095f6; color: white; border: none; padding: 7px; border-radius: 4px; font-weight: 600;">Log In</button>
+        <div class="divider">OR</div>
+
+  <button onclick="signInWithGoogle()" style="width: 100%; background: white; color: #262626; border: 1px solid #dbdbdb; padding: 7px; border-radius: 4px; font-weight: 600; display: flex; align-items: center; justify-content: center;">
+    <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" style="width: 18px; margin-right: 8px;">
+    Continue with Google
+  </button>
+        
+        <a href="reset.html" style="color: #00376b; font-size: 15px; text-decoration: none; margin-top: 12px; display: inline-block;">Forgot password?</a>
+    </div>
+
+    <div id="registerForm" class="hide">
+        <input type="text" id="regName" placeholder="Full Name" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 6px; border-radius: 3px; width: 94%;">
+        <input type="email" id="regEmail" placeholder="Email" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 6px; border-radius: 3px; width: 94%;">
+        <input type="password" id="regPassword" placeholder="Password" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 6px; border-radius: 3px; width: 94%;">
+        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" style="background: #fafafa; border: 1px solid #dbdbdb; padding: 9px 8px 7px; margin-bottom: 12px; border-radius: 3px; width: 94%;">
+        <button onclick="register()" style="width: 100%; background: #0095f6; color: white; border: none; padding: 7px; border-radius: 4px; font-weight: 600;">Sign Up</button>
+    </div>
+</div>
+
+<!-- Instagram-style Error Popup Modal (Fixed) -->
+<div id="errorPopup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:12px; width:90%; max-width:400px; overflow:hidden; margin:auto;">
+        <div id="errorMessage" style="padding:20px; font-size:14px; text-align:center; color:#262626; border-bottom:1px solid #dbdbdb;"></div>
+        <button onclick="closeError()" style="width:100%; padding:16px; font-size:14px; font-weight:600; color:#0095f6; background:none; border:none; cursor:pointer;">OK</button>
+    </div>
+</div>
+
+<!-- Chat UI -->
+<div class="chat-window" id="chatApp" style="display: none;">
+    <div class="chat-header">
+        <div class="chat-header-content">
+            <div class="chat-header-left">
+                <!-- Added back button here -->
+                <button class="back-btn" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+
+                <div class="profile-pic-wrapper" id="adminPic">
+                    <img src="https://ziiax.fwh.is/icon-512.png" alt="Ziia">
+                </div>
+
+                <div class="profile-online">
+                    <span class="name">ZIIA</span>
+                    <div id="adminTyping"></div>
+                </div>
+            </div>
+            <div style="position: relative;">
+                <button class="menu-btn" onclick="toggleMenu()"> <i class="fas fa-ellipsis-v"></i></button>
+                <div id="menuDropdown">
+                    <div onclick="logout()">Logout</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chat-messages" id="messages"></div>
+    <div class="chat-input">
+        <input type="text" id="messageInput" placeholder="Message..." />
+        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<!-- Image Popup -->
+<div id="imagePopup" class="image-popup">
+    <span class="close-btn" onclick="closeImagePopup()">&times;</span>
+    <img id="popupImage" class="popup-image">
+</div>
+
+<!-- Link Preview Popup -->
+<div id="linkPreviewOverlay" class="link-preview-overlay" style="display: none;">
+    <div class="link-preview-container">
+        <div class="link-preview-header">
+            <span id="linkPreviewTitle"></span>
+            <button class="link-preview-close" onclick="closeLinkPreview()" style='width: 10%;'>
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <iframe id="linkPreviewIframe" class="link-preview-iframe" allow="fullscreen"></iframe>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+
+    
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDWRfmNGsp3cBvD5mODOj1g7uOFbWXph-k",
+  authDomain: "exclusivechat-64482.firebaseapp.com",
+  projectId: "exclusivechat-64482",
+  storageBucket: "exclusivechat-64482.appspot.com",
+  messagingSenderId: "159353508205",
+  appId: "1:159353508205:web:595954835fac71ef53ca64",
+  databaseURL: "https://exclusivechat-64482-default-rtdb.firebaseio.com/"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+let fanName = "";
+let typingTimeout;
+let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// Authentication State Listener
+auth.onAuthStateChanged(user => {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const authBox = document.getElementById("authBox");
+  
+  if (user) {
+    db.ref("users/" + user.uid).once("value").then(snapshot => {
+      if (snapshot.exists()) {
+        fanName = snapshot.val().fanName;
+      } else {
+        // For new Google users who weren't properly saved
+        fanName = user.displayName || "Google User";
+        db.ref("users/" + user.uid).set({ 
+          fanName: fanName,
+          email: user.email,
+          provider: "google"
+        });
+      }
+      launchChat();
+      loadingOverlay.style.display = "none";
+      
+      setTimeout(() => {
+        document.getElementById("messageInput").focus();
+      }, 300);
+    });
+  } else {
+    authBox.style.display = "block";
+    loadingOverlay.style.display = "none";
+  }
+});
+
+// Google Sign-In function
+function signInWithGoogle() {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  loadingOverlay.style.display = "flex";
+  
+  auth.signInWithPopup(googleProvider)
+    .then((result) => {
+      // The signed-in user info
+      const user = result.user;
+      
+      // Check if this is a new user
+      if (result.additionalUserInfo.isNewUser) {
+        // Set the fanName from Google profile
+        fanName = user.displayName || "Google User";
+        
+        // Save user to database
+        return db.ref("users/" + user.uid).set({ 
+          fanName: fanName,
+          email: user.email,
+          provider: "google"
+        });
+      }
+    })
+    .catch((error) => {
+      loadingOverlay.style.display = "none";
+      showError("Google login failed: " + (error.message || "Unknown error"));
+    });
+}
+
+// Authentication Functions
+function toggleAuth(type) {
+  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  
+  if (type === 'login') {
+    document.querySelector('.tab-button:nth-child(1)').classList.add('active');
+    loginForm.classList.remove('hide');
+    registerForm.classList.add('hide');
+  } else {
+    document.querySelector('.tab-button:nth-child(2)').classList.add('active');
+    registerForm.classList.remove('hide');
+    loginForm.classList.add('hide');
+  }
+}
+
+async function register() {
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const confirmPassword = document.getElementById("regConfirmPassword").value;
+  const loadingOverlay = document.getElementById("loadingOverlay");
+
+  if (!name || !email || !password || !confirmPassword) {
+    showError("Please fill all fields");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showError("Passwords don't match");
+    return;
+  }
+
+  loadingOverlay.style.display = "flex";
+  
+  try {
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    fanName = name;
+    await db.ref("users/" + userCredential.user.uid).set({ fanName });
+  } catch (error) {
+    loadingOverlay.style.display = "none";
+    if (error.code === 'auth/email-already-in-use') {
+      showError("Email already registered. Please login or use a different email.");
+    } else {
+      showError(error.message);
+    }
+  }
+}
+
+async function login() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const loadingOverlay = document.getElementById("loadingOverlay");
+
+  if (!email || !password) {
+    showError("Please fill all fields");
+    return;
+  }
+
+  loadingOverlay.style.display = "flex";
+  
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (error) {
+    loadingOverlay.style.display = "none";
+    showError(error.code === 'auth/invalid-login-credentials' 
+      ? "Wrong email or password" 
+      : error.message);
+  }
+}
+
+// Chat Functions
+function launchChat() {
+  document.getElementById("authBox").style.display = "none";
+  document.getElementById("chatApp").style.display = "flex";
+  loadMessages();
+  listenToAdminTyping();
+  setupMessageInput();
+}
+
+function setupMessageInput() {
+  const msgInput = document.getElementById("messageInput");
+  const sendButton = document.querySelector('.chat-input button');
+  
+  // Handle Enter key submission
+  msgInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  
+  // Mobile-specific touch handling
+  if (isMobile) {
+    sendButton.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      msgInput.focus();
+      setTimeout(() => sendMessage(), 10);
+    }, { passive: false });
+  }
+  
+  // Typing detection
+  msgInput.addEventListener("input", () => {
+    setTypingStatus(true);
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => setTypingStatus(false), 2000);
+  });
+}
+
+function listenToAdminTyping() {
+  db.ref("chats/" + fanName + "/typingStatus/admin").on("value", snap => {
+    const typingEl = document.getElementById("adminTyping");
+    typingEl.innerText = snap.val() === "typing" ? "typing..." : "";
+  });
+}
+
+function setTypingStatus(isTyping) {
+  if (!fanName) return;
+  db.ref(`chats/${fanName}/typingStatus/fan`).set(isTyping ? "typing" : "idle");
+}
+
+async function sendMessage() {
+  const msgInput = document.getElementById("messageInput");
+  const msg = msgInput.value.trim();
+  const sendButton = document.querySelector('.chat-input button');
+  
+  if (!msg) return;
+
+  // Visual feedback
+  const originalButtonHTML = sendButton.innerHTML;
+  sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  sendButton.disabled = true;
+  
+  try {
+    const messageRef = await db.ref("chats/" + fanName).push({
+      sender: "fan",
+      text: msg,
+      timestamp: Date.now(),
+      status: "sent"
+    });
+    
+    await messageRef.update({ status: "delivered" });
+    msgInput.value = "";
+    
+    // On mobile, maintain keyboard visibility
+    if (isMobile) {
+      setTimeout(() => {
+        msgInput.focus();
+      }, 100);
+    }
+    
+    // Smooth scroll
+    setTimeout(() => {
+      const messagesEl = document.getElementById("messages");
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }, 50);
+    
+    setTypingStatus(false);
+  } catch (error) {
+    console.error("Message send error:", error);
+    showError("Failed to send message. Please try again.");
+  } finally {
+    sendButton.innerHTML = originalButtonHTML;
+    sendButton.disabled = false;
+    
+    // Extra focus for mobile
+    if (isMobile) {
+      setTimeout(() => msgInput.focus(), 200);
+    }
+  }
+}
+
+function loadMessages() {
+  const messagesRef = db.ref("chats/" + fanName);
+  document.getElementById("messages").innerHTML = '';
+  
+  messagesRef.orderByChild("timestamp").on("child_added", snapshot => {
+    const msg = snapshot.val();
+    
+    if (!msg || !msg.timestamp || !msg.text) return;
+
+    if (document.querySelector(`.message[data-id="${snapshot.key}"]`)) return;
+    
+    const msgDiv = createMessageElement(snapshot.key, msg);
+    document.getElementById("messages").appendChild(msgDiv);
+    
+    setTimeout(() => {
+      document.getElementById("messages").scrollTop = 
+        document.getElementById("messages").scrollHeight;
+    }, 50);
+
+    if (msg.sender !== "fan" && msg.status === "delivered") {
+      db.ref(`chats/${fanName}/${snapshot.key}`).update({ status: "seen" });
+    }
+    
+    updateAdminStatus();
+  });
+
+  messagesRef.on("child_changed", snapshot => {
+    const msg = snapshot.val();
+    if (msg.sender !== "fan") return;
+    
+    const statusSpan = document.querySelector(`.message[data-id="${snapshot.key}"] .status`);
+    if (statusSpan) {
+      statusSpan.innerHTML = getMessageStatus(msg.status);
+    }
+    
+    updateAdminStatus();
+  });
+}
+
+// Media Handling Functions
+function createLinkPreview(url) {
+  let domain = url;
+  try {
+    domain = new URL(url).hostname.replace('www.', '');
+  } catch (e) {
+    console.warn("Invalid URL:", url);
+  }
+  
+  return `
+    <div class="link-preview">
+      <span class="link-domain">${domain}</span>
+      <button class="view-btn" onclick="showLinkPreview('${url}')">
+        open
+      </button>
+    </div>
+  `;
+}
+
+function createImagePreview(url) {
+  return `
+    <div class="image-preview">
+      <img src="${url}" alt="Image preview" class="chat-image" onclick="openImagePopup('${url}')">
+    </div>
+  `;
+}
+
+function processContentWithMedia(text) {
+  if (!text) return '';
+  
+  return text.replace(/(https?:\/\/[^\s]+)/g, url => {
+    // Check if URL is audio
+    if (/\.(mp3|ogg|wav|m4a|aac)(\?.*)?$/i.test(url)) {
+      return createAudioPlayer(url);
+    }
+    // Check if URL is image
+    else if (/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url)) {
+      return createImagePreview(url);
+    }
+    // Default to link preview
+    else {
+      return createLinkPreview(url);
+    }
+  });
+}
+
+function createAudioPlayer(url) {
+  return `
+    <div class="audio-player-container" data-audio-url="${url}">
+      <div class="audio-player-ui">
+        <button class="audio-play-btn">
+          <svg class="play-icon" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" fill="currentColor"/>
+          </svg>
+        </button>
+        <div class="audio-progress-container">
+          <div class="audio-progress-bar"></div>
+        </div>
+        <span class="audio-duration">0:00</span>
+      </div>
+      <audio class="audio-element" preload="metadata" crossorigin="anonymous">
+        <source src="${url}" type="audio/mp3">
+      </audio>
+    </div>
+  `;
+}
+
+function initMediaPlayers(container) {
+  const audioContainers = container.querySelectorAll('.audio-player-container');
+  
+  audioContainers.forEach(container => {
+    const audioElement = container.querySelector('.audio-element');
+    const playBtn = container.querySelector('.audio-play-btn');
+    const progressBar = container.querySelector('.audio-progress-bar');
+    const durationDisplay = container.querySelector('.audio-duration');
+    
+    // Error handling for audio loading
+    audioElement.addEventListener('error', () => {
+      console.error("Error loading audio:", audioElement.error);
+      container.innerHTML = `<div class="audio-error">Could not load audio</div>`;
+    });
+    
+    // Set duration when metadata loads
+    audioElement.addEventListener('loadedmetadata', () => {
+      if (!isNaN(audioElement.duration)) {
+        durationDisplay.textContent = formatTime(audioElement.duration);
+      }
+    });
+    
+    // Play/pause toggle
+    playBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleAudioPlayback(audioElement, playBtn);
+    });
+    
+    // Update progress bar
+    audioElement.addEventListener('timeupdate', () => {
+      updateAudioProgress(audioElement, progressBar, durationDisplay);
+    });
+    
+    // Click on progress bar to seek
+    container.querySelector('.audio-progress-container').addEventListener('click', (e) => {
+      seekAudio(e, audioElement, progressBar);
+    });
+    
+    // Reset when audio ends
+    audioElement.addEventListener('ended', () => {
+      resetAudioPlayer(audioElement, playBtn, progressBar);
+    });
+  });
+}
+
+function toggleAudioPlayback(audioElement, playBtn) {
+  // Pause all other audio players first
+  document.querySelectorAll('.audio-element').forEach(el => {
+    if (el !== audioElement && !el.paused) {
+      el.pause();
+      const btn = el.closest('.audio-player-container').querySelector('.audio-play-btn');
+      btn.innerHTML = `
+        <svg class="play-icon" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" fill="currentColor"/>
+        </svg>
+      `;
+    }
+  });
+
+  if (audioElement.paused) {
+    audioElement.play().catch(e => {
+      console.error("Audio play failed:", e);
+    });
+    playBtn.innerHTML = `
+      <svg class="pause-icon" viewBox="0 0 24 24">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+      </svg>
+    `;
+  } else {
+    audioElement.pause();
+    playBtn.innerHTML = `
+      <svg class="play-icon" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" fill="currentColor"/>
+      </svg>
+    `;
+  }
+}
+
+function updateAudioProgress(audioElement, progressBar, durationDisplay) {
+  const progress = (audioElement.currentTime / audioElement.duration) * 100;
+  progressBar.style.width = `${progress}%`;
+  durationDisplay.textContent = formatTime(audioElement.duration - audioElement.currentTime);
+}
+
+function seekAudio(e, audioElement, progressBar) {
+  const percent = e.offsetX / e.target.clientWidth;
+  audioElement.currentTime = percent * audioElement.duration;
+  progressBar.style.width = `${percent * 100}%`;
+}
+
+function resetAudioPlayer(audioElement, playBtn, progressBar) {
+  playBtn.innerHTML = `
+    <svg class="play-icon" viewBox="0 0 24 24">
+      <path d="M8 5v14l11-7z" fill="currentColor"/>
+    </svg>
+  `;
+  progressBar.style.width = '0%';
+  audioElement.currentTime = 0;
+}
+
+function formatTime(seconds) {
+  if (isNaN(seconds)) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+// Message Creation Functions
+function createMessageElement(id, msg) {
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `message ${msg.sender === "fan" ? "sent" : "received"}`;
+  msgDiv.dataset.id = id;
+
+  const statusIcon = msg.sender === "fan" 
+    ? `<div class="status">${getMessageStatus(msg.status)}</div>` 
+    : "";
+
+  const processedText = processContentWithMedia(msg.text || "");
+
+  msgDiv.innerHTML = `
+    <div class="message-content">${processedText}</div>
+    ${statusIcon}
+    <div class="timestamp">${formatTimestamp(msg.timestamp)}</div>
+  `;
+
+  // Initialize media players after DOM is created
+  setTimeout(() => initMediaPlayers(msgDiv), 0);
+
+  return msgDiv;
+}
+
+function getMessageStatus(status) {
+  const statusMap = {
+    sent: "✓",
+    delivered: "✓✓",
+    seen: '<span style="color: blue;">✓✓</span>'
+  };
+  return statusMap[status] || "✓";
+}
+
+function updateAdminStatus() {
+  db.ref("chats/" + fanName).limitToLast(1).once("value", snapshot => {
+    const lastMessage = snapshot.val();
+    const lastStatus = lastMessage ? Object.values(lastMessage)[0].status : null;
+    document.getElementById("adminPic").classList.toggle("online", lastStatus === "seen");
+  });
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp || isNaN(timestamp)) return "Just now";
+  
+  const date = new Date(timestamp);
+  const now = new Date();
+  const hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const timeStr = `${((hours + 11) % 12 + 1)}:${minutes} ${ampm}`;
+
+  if (date.toDateString() === now.toDateString()) return `Today at ${timeStr}`;
+  
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) return `Yesterday at ${timeStr}`;
+  
+  return `${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at ${timeStr}`;
+}
+
+// UI Functions
+function toggleMenu() {
+  const menu = document.getElementById("menuDropdown");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+function logout() {
+  auth.signOut().then(() => {
+    document.getElementById("authBox").style.display = "block";
+    document.getElementById("chatApp").style.display = "none";
+    toggleAuth('login');
+  });
+}
+
+function showError(message) {
+  document.getElementById("errorMessage").textContent = message;
+  document.getElementById("errorPopup").style.display = "block";
+}
+
+function closeError() {
+  document.getElementById("errorPopup").style.display = "none";
+}
+
+// Link Preview Functions
+function showLinkPreview(url) {
+  const overlay = document.getElementById('linkPreviewOverlay');
+  const iframe = document.getElementById('linkPreviewIframe');
+  const title = document.getElementById('linkPreviewTitle');
+  
+  try {
+    iframe.src = url;
+    title.textContent = 'ZIIA';
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  } catch (e) {
+    console.error("Invalid URL:", e);
+    showError("This link cannot be previewed");
+  }
+}
+
+function closeLinkPreview() {
+  const overlay = document.getElementById('linkPreviewOverlay');
+  const iframe = document.getElementById('linkPreviewIframe');
+  
+  iframe.src = '';
+  overlay.style.display = 'none';
+  document.body.style.overflow = 'auto';
+  
+  setTimeout(() => {
+    document.getElementById("messageInput").focus();
+  }, 100);
+}
+
+// Image Popup Functions
+function openImagePopup(imageUrl) {
+  const popup = document.getElementById('imagePopup');
+  const popupImg = document.getElementById('popupImage');
+  popupImg.src = imageUrl;
+  popup.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeImagePopup() {
+  document.getElementById('imagePopup').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+// Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+  // Close menu when clicking outside
+  document.addEventListener('click', event => {
+    const menu = document.getElementById("menuDropdown");
+    const button = document.querySelector('.menu-btn');
+    if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
+      menu.style.display = "none";
+    }
+  });
+  
+  // Initialize back button
+  const backBtn = document.querySelector('.back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.history.back();
+    });
+  }
+  
+  // Prevent form submission
+  const chatInput = document.querySelector('.chat-input');
+  if (chatInput) {
+    chatInput.addEventListener('submit', function(e) {
+      e.preventDefault();
+      sendMessage();
+    });
+  }
+});
+</script>
+</body>
+</html>
