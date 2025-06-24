@@ -206,6 +206,54 @@
     .message:hover .delete-btn {
       display: block;
     }
+    /* Image preview in chat */
+    .image-preview {
+      margin: 8px 0;
+      max-width: 300px;
+      max-height: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .chat-image {
+      width: 100%;
+      height: auto;
+      transition: transform 0.2s;
+    }
+    .chat-image:hover {
+      transform: scale(1.02);
+    }
+    /* Link Preview */
+    .link-preview {
+      margin: 5px 0;
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .link-domain {
+      color: #075e54;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 60%;
+    }
+    .view-btn {
+      background: #8d6eff;
+      color: white;
+      border: none;
+      padding: 9px 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-left: 8px;
+    }
+    .view-btn:hover {
+      background: #128C7E;
+    }
   </style>
 </head>
 <body>
@@ -233,6 +281,26 @@
     </div>
   </div>
 </div>
+
+<!-- Image Popup -->
+<div id="imagePopup" class="image-popup">
+  <span class="close-btn" onclick="closeImagePopup()">&times;</span>
+  <img id="popupImage" class="popup-image">
+</div>
+
+<!-- Link Preview Overlay -->
+<div id="linkPreviewOverlay" class="link-preview-overlay" style="display: none;">
+  <div class="link-preview-container">
+    <div class="link-preview-header">
+      <span id="linkPreviewTitle">Ziia Chat</span>
+      <button class="link-preview-close" onclick="closeLinkPreview()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <iframe id="linkPreviewIframe" class="link-preview-iframe" allow="fullscreen"></iframe>
+  </div>
+</div>
+
 <!-- Modals -->
 <div class="modal" id="bulkModal">
   <div class="modal-content">
@@ -267,6 +335,7 @@
     <button onclick="closeModals()">Cancel</button>
   </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  
@@ -388,6 +457,80 @@ function sendTypingStatus() {
   }, 2000);
 }
 
+// Media Handling Functions
+function createLinkPreview(url) {
+  let domain = url;
+  try {
+    domain = new URL(url).hostname.replace('www.', '');
+  } catch (e) {
+    console.warn("Invalid URL:", url);
+  }
+  return `
+    <div class="link-preview">
+      <span class="link-domain">${domain}</span>
+      <button class="view-btn" onclick="showLinkPreview('${url}')">Open</button>
+    </div>
+  `;
+}
+
+function createImagePreview(url) {
+  return `
+    <div class="image-preview">
+      <img src="${url}" alt="Image preview" class="chat-image" onclick="openImagePopup('${url}')">
+    </div>
+  `;
+}
+
+function processContentWithMedia(text) {
+  if (!text) return '';
+  
+  // Process URLs in text
+  return text.replace(/(https?:\/\/[^\s]+)/g, url => {
+    // Check if URL is image
+    if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url)) {
+      return createImagePreview(url);
+    }
+    // Default to link preview
+    else {
+      return createLinkPreview(url);
+    }
+  });
+}
+
+function openImagePopup(imageUrl) {
+  const popup = document.getElementById('imagePopup');
+  const popupImg = document.getElementById('popupImage');
+  popup.style.display = 'flex';
+  popupImg.src = imageUrl;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeImagePopup() {
+  document.getElementById('imagePopup').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function showLinkPreview(url) {
+  const overlay = document.getElementById('linkPreviewOverlay');
+  const iframe = document.getElementById('linkPreviewIframe');
+  try {
+    iframe.src = url;
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  } catch (e) {
+    console.error("Invalid URL:", e);
+    alert("This link cannot be previewed");
+  }
+}
+
+function closeLinkPreview() {
+  const overlay = document.getElementById('linkPreviewOverlay');
+  const iframe = document.getElementById('linkPreviewIframe');
+  iframe.src = '';
+  overlay.style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
 function displayMessage(text, sender, timestamp, status, messageId) {
   const chatBox = document.getElementById('chatBox');
   const div = document.createElement('div');
@@ -411,8 +554,9 @@ function displayMessage(text, sender, timestamp, status, messageId) {
     }
   });
   
+  // Process message content with media links
   div.innerHTML = `
-    ${text}
+    ${processContentWithMedia(text)}
     <div class="timestamp">${timeString}</div>
   `;
   
@@ -423,10 +567,8 @@ function displayMessage(text, sender, timestamp, status, messageId) {
     div.appendChild(span);
   }
   
-  // Append delete button only for admin messages
-  if (sender === 'admin') {
-    div.appendChild(deleteBtn);
-  }
+  // Append delete button only for admin messages or any message
+  div.appendChild(deleteBtn);
   
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
