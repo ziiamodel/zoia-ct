@@ -689,31 +689,76 @@
     });
   }
 
-  // Display a Single Message in Chat Area
-  function displayMessage(text, sender, timestamp, messageId) {
-    const isAdmin = sender === 'admin';
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isAdmin ? 'sent' : 'received'}`;
-    let content = '';
-    const urlRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi;
+  
+  
+  
+  
+  
+  
+  
+ function displayMessage(text, sender, timestamp, messageId) {
+  const isAdmin = sender === 'admin';
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isAdmin ? 'sent' : 'received'}`;
+  let content = '';
+  const urlRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi;
 
-    if (urlRegex.test(text)) {
-      content += `<img src="${text}" class="message-image" onclick="openImagePopup('${text}')">`;
-    } else {
-      content += text;
-    }
-
-    messageDiv.innerHTML = `
-      ${content}
-      <div class="message-time">${new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-      <div class="message-options">
-        <i class="fas fa-trash-alt" onclick="deleteMessage('${messageId}')"></i>
-      </div>
-    `;
-
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+  if (urlRegex.test(text)) {
+    content += `<img src="${text}" class="message-image" onclick="openImagePopup('${text}')">`;
+  } else {
+    content += text;
   }
+
+  // Format timestamp
+  const messageDate = new Date(timestamp);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const isToday = messageDate.toDateString() === today.toDateString();
+  const isYesterday = messageDate.toDateString() === yesterday.toDateString();
+
+  let timeText = '';
+
+  if (isToday) {
+    timeText = 'Today ' + messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else if (isYesterday) {
+    timeText = 'Yesterday ' + messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else if (messageDate.getFullYear() === today.getFullYear()) {
+    const options = { month: 'short', day: 'numeric' }; // e.g., "Oct 10"
+    timeText = messageDate.toLocaleDateString(undefined, options) + ' ' +
+               messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' }; // e.g., "Oct 10, 2023"
+    timeText = messageDate.toLocaleDateString(undefined, options) + ' ' +
+               messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  messageDiv.innerHTML = `
+    ${content}
+    <div class="message-time">${timeText}</div>
+    <div class="message-options">
+      <i class="fas fa-trash-alt" onclick="deleteMessage('${messageId}')"></i>
+    </div>
+  `;
+
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+} 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   // Send Admin Message
   function sendAdminMessage() {
