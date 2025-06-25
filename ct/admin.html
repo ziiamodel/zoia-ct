@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary: #0095f6;
+      --primary: #0095f6; 
       --secondary: #efefef;
       --border: #dbdbdb;
       --text-dark: #262626;
@@ -19,21 +19,18 @@
       --story-gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
       --red-dot: #ed4956;
     }
-    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
     }
-    
     body {
       background-color: var(--bg-white);
       color: var(--text-dark);
       height: 100vh;
-      overflow: hidden;
+      overflow-x: hidden;
     }
-    
     /* Login Panel */
     .login-panel {
       max-width: 350px;
@@ -41,16 +38,14 @@
       background: var(--bg-white);
       padding: 20px 40px;
       border: 1px solid var(--border);
-      border-radius: 1px;
+      border-radius: 8px;
       text-align: center;
     }
-    
     .login-panel h3 {
       margin: 15px 0;
       font-weight: 600;
       color: var(--text-dark);
     }
-    
     .login-panel input {
       width: 100%;
       padding: 9px 8px 7px;
@@ -60,7 +55,6 @@
       border-radius: 3px;
       font-size: 12px;
     }
-    
     .login-panel button {
       width: 100%;
       padding: 7px;
@@ -72,19 +66,17 @@
       font-weight: 600;
       cursor: pointer;
     }
-    
     #loginStatus {
       color: var(--red-dot);
       font-size: 12px;
       margin: 10px 0;
     }
-    
     /* Main App Container */
     .app-container {
       display: none;
+      flex-direction: column;
       height: 100vh;
     }
-    
     /* Header */
     .header {
       display: flex;
@@ -93,34 +85,22 @@
       padding: 15px;
       border-bottom: 1px solid var(--border);
       background: var(--bg-white);
-      position: fixed;
-      top: 0;
-      width: 100%;
       z-index: 100;
     }
-    
     .logo {
       font-weight: 600;
       font-size: 20px;
     }
-    
-    .header-icons {
-      display: flex;
-      gap: 15px;
-    }
-    
     .header-icons i {
       font-size: 20px;
       cursor: pointer;
     }
-    
     /* Main Content */
     .main-content {
       display: flex;
-      height: calc(100vh - 50px);
-      margin-top: 50px;
+      flex: 1;
+      overflow: hidden;
     }
-    
     /* Sidebar - User List */
     .sidebar {
       width: 350px;
@@ -129,12 +109,6 @@
       height: 100%;
       background: var(--bg-white);
     }
-    
-    .user-search {
-      padding: 15px;
-      border-bottom: 1px solid var(--border);
-    }
-    
     .user-search input {
       width: 100%;
       padding: 8px 10px;
@@ -143,12 +117,10 @@
       border-radius: 8px;
       font-size: 14px;
     }
-    
     .user-list {
       overflow-y: auto;
       height: calc(100% - 60px);
     }
-    
     .user-item {
       display: flex;
       align-items: center;
@@ -157,30 +129,25 @@
       transition: background 0.2s;
       position: relative;
     }
-    
     .user-item:hover {
       background: var(--bg-gray);
     }
-    
     .user-item.active {
       background: #f8f8f8;
       border-left: 3px solid var(--primary);
     }
-    
     .user-avatar {
       width: 56px;
       height: 56px;
       border-radius: 50%;
       object-fit: cover;
       margin-right: 12px;
-      border: 2px solid transparent;
       background: var(--story-gradient);
       padding: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
     .user-avatar-inner {
       width: 100%;
       height: 100%;
@@ -189,13 +156,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
-    
     .user-avatar-inner span {
       font-weight: bold;
       font-size: 20px;
-      color: var(--bg-white);
+      color: white;
       background: var(--primary);
       width: 100%;
       height: 100%;
@@ -203,23 +168,14 @@
       align-items: center;
       justify-content: center;
     }
-    
-    .user-avatar-inner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
     .user-info {
       flex: 1;
     }
-    
     .user-name {
       font-weight: 600;
       font-size: 14px;
       margin-bottom: 2px;
     }
-    
     .user-last-message {
       font-size: 12px;
       color: var(--text-light);
@@ -228,7 +184,6 @@
       text-overflow: ellipsis;
       max-width: 200px;
     }
-    
     .message-time {
       font-size: 10px;
       color: var(--text-light);
@@ -236,7 +191,6 @@
       top: 15px;
       right: 15px;
     }
-    
     .unread-dot {
       width: 8px;
       height: 8px;
@@ -246,35 +200,30 @@
       right: 15px;
       bottom: 15px;
     }
-    
     /* Chat Area */
     .chat-area {
       flex: 1;
-      display: flex;
+      display: none;
       flex-direction: column;
       height: 100%;
       background: var(--bg-white);
     }
-    
     .chat-header {
       display: flex;
       align-items: center;
       padding: 15px;
       border-bottom: 1px solid var(--border);
     }
-    
     .chat-back {
       margin-right: 15px;
       font-size: 20px;
       cursor: pointer;
       display: none;
     }
-    
     .chat-user {
       display: flex;
       align-items: center;
     }
-    
     .chat-user-avatar {
       width: 32px;
       height: 32px;
@@ -283,22 +232,10 @@
       background: var(--story-gradient);
       padding: 2px;
     }
-    
-    .chat-user-avatar-inner {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: var(--bg-white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    
     .chat-user-avatar-inner span {
       font-weight: bold;
       font-size: 12px;
-      color: var(--bg-white);
+      color: white;
       background: var(--primary);
       width: 100%;
       height: 100%;
@@ -306,45 +243,26 @@
       align-items: center;
       justify-content: center;
     }
-    
     .chat-user-name {
       font-weight: 600;
       font-size: 14px;
     }
-    
     .chat-actions {
       margin-left: auto;
       display: flex;
       gap: 15px;
     }
-    
     .chat-actions i {
       font-size: 18px;
       cursor: pointer;
     }
-    
     /* Chat Messages */
     .chat-messages {
       flex: 1;
       overflow-y: auto;
       padding: 15px;
       background: #fafafa;
-      background-image: url('https://www.transparenttextures.com/patterns/brushed-alum.png');
     }
-    
-    .message-group {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .message-time-label {
-      text-align: center;
-      margin: 15px 0;
-      font-size: 12px;
-      color: var(--text-light);
-    }
-    
     .message {
       max-width: 70%;
       padding: 8px 12px;
@@ -352,113 +270,18 @@
       border-radius: 18px;
       font-size: 14px;
       line-height: 1.4;
-      position: relative;
     }
-    
     .message.sent {
       align-self: flex-end;
       background: var(--primary);
       color: white;
-      border-top-right-radius: 4px;
     }
-    
     .message.received {
       align-self: flex-start;
       background: var(--bg-white);
       color: var(--text-dark);
       border: 1px solid var(--border);
-      border-top-left-radius: 4px;
     }
-    
-    .message-status {
-      font-size: 10px;
-      margin-left: 5px;
-      opacity: 0.7;
-    }
-    
-    .message-time {
-      font-size: 10px;
-      color: var(--text-light);
-      margin-top: 2px;
-      text-align: right;
-    }
-    
-    .message-options {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: -25px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .message:hover .message-options {
-      opacity: 1;
-    }
-    
-    .message-options i {
-      font-size: 16px;
-      color: var(--text-light);
-      cursor: pointer;
-    }
-    
-    /* Image Preview */
-    .message-image {
-      max-width: 250px;
-      border-radius: 12px;
-      margin: 5px 0;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* Link Preview */
-    .message-link {
-      max-width: 250px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin: 5px 0;
-      overflow: hidden;
-      background: var(--bg-white);
-    }
-    
-    .link-preview-image {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-    }
-    
-    .link-preview-content {
-      padding: 10px;
-    }
-    
-    .link-preview-title {
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 5px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .link-preview-description {
-      font-size: 11px;
-      color: var(--text-light);
-      margin-bottom: 5px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    
-    .link-preview-url {
-      font-size: 10px;
-      color: var(--text-light);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    /* Chat Input */
     .chat-input {
       display: flex;
       align-items: center;
@@ -466,14 +289,6 @@
       border-top: 1px solid var(--border);
       background: var(--bg-white);
     }
-    
-    .chat-input i {
-      font-size: 24px;
-      color: var(--text-dark);
-      margin-right: 10px;
-      cursor: pointer;
-    }
-    
     .chat-input input {
       flex: 1;
       padding: 10px 15px;
@@ -482,7 +297,6 @@
       font-size: 14px;
       outline: none;
     }
-    
     .chat-input button {
       margin-left: 10px;
       background: transparent;
@@ -492,186 +306,22 @@
       font-size: 14px;
       cursor: pointer;
     }
-    
-    .chat-input button:disabled {
-      color: var(--text-light);
-      cursor: default;
-    }
-    
-    /* Typing Indicator */
-    .typing-indicator {
-      display: flex;
-      align-items: center;
-      padding: 0 15px 5px;
-      font-size: 12px;
-      color: var(--text-light);
-    }
-    
-    .typing-dots {
-      display: flex;
-      margin-left: 5px;
-    }
-    
-    .typing-dot {
-      width: 5px;
-      height: 5px;
-      background: var(--text-light);
-      border-radius: 50%;
-      margin: 0 2px;
-      animation: typingAnimation 1.4s infinite ease-in-out;
-    }
-    
-    .typing-dot:nth-child(1) {
-      animation-delay: 0s;
-    }
-    
-    .typing-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .typing-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    @keyframes typingAnimation {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-5px); }
-    }
-    
-    /* Image Popup */
-    .image-popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    
-    .popup-image {
-      max-width: 90%;
-      max-height: 90%;
-    }
-    
-    .close-popup {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      color: white;
-      font-size: 30px;
-      cursor: pointer;
-    }
-    
-    /* Responsive */
     @media (max-width: 768px) {
       .sidebar {
         width: 100%;
         display: block;
       }
-      
       .chat-area {
         display: none;
         width: 100%;
       }
-      
       .chat-area.active {
         display: flex;
+        flex-direction: column;
       }
-      
       .chat-back {
         display: block;
       }
-    }
-    
-    /* Modal Styles */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    
-    .modal-content {
-      background: white;
-      width: 90%;
-      max-width: 400px;
-      padding: 20px;
-      border-radius: 12px;
-    }
-    
-    .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    
-    .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    
-    .modal textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 15px;
-      resize: none;
-    }
-    
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .modal-actions button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    
-    .modal-actions .primary-btn {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .modal-actions .secondary-btn {
-      background: var(--secondary);
-      color: var(--text-dark);
-    }
-    
-    .fan-checkboxes {
-      max-height: 200px;
-      overflow-y: auto;
-      margin-bottom: 15px;
-    }
-    
-    .fan-checkbox-item {
-      display: flex;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .fan-checkbox-item input {
-      margin-right: 10px;
     }
   </style>
 </head>
@@ -696,46 +346,29 @@
       <i class="far fa-bell"></i>
     </div>
   </div>
-  
+
   <!-- Main Content -->
   <div class="main-content">
     <!-- Sidebar - User List -->
-    <div class="sidebar">
+    <div class="sidebar" id="fanList">
       <div class="user-search">
         <input type="text" placeholder="Search">
       </div>
-      <div class="user-list" id="fanList">
-        <!-- Users will be loaded here -->
-      </div>
     </div>
-    
+
     <!-- Chat Area -->
     <div class="chat-area" id="chatArea">
       <div class="chat-header">
-        <div class="chat-back" id="chatBack">
-          <i class="fas fa-arrow-left"></i>
-        </div>
-        <div class="chat-user" id="chatUserInfo">
-          <!-- User info will be loaded here -->
-        </div>
+        <div class="chat-back" id="chatBack"><i class="fas fa-arrow-left"></i></div>
+        <div class="chat-user" id="chatUserInfo"></div>
         <div class="chat-actions">
           <i class="fas fa-phone"></i>
           <i class="fas fa-video"></i>
           <i class="fas fa-info-circle"></i>
         </div>
       </div>
-      
-      <div class="chat-messages" id="chatMessages">
-        <!-- Messages will be loaded here -->
-      </div>
-      
-      <div class="typing-indicator" id="typingStatus">
-        <!-- Typing indicator will appear here -->
-      </div>
-      
+      <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input">
-        <i class="far fa-smile"></i>
-        <i class="fas fa-paperclip"></i>
         <input type="text" id="adminMessage" placeholder="Message..." oninput="sendTypingStatus()">
         <button id="sendButton" onclick="sendAdminMessage()" disabled>Send</button>
       </div>
@@ -743,66 +376,9 @@
   </div>
 </div>
 
-<!-- Image Popup -->
-<div class="image-popup" id="imagePopup">
-  <span class="close-popup" onclick="closeImagePopup()">&times;</span>
-  <img class="popup-image" id="popupImage">
-</div>
-
-<!-- Bulk Message Modal -->
-<div class="modal" id="bulkModal">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeModals()">&times;</span>
-    <div class="modal-title">Send Bulk Message</div>
-    <textarea id="bulkMessageInput" placeholder="Enter your message..."></textarea>
-    <div class="fan-checkboxes" id="fanCheckboxes">
-      <!-- Fan checkboxes will be loaded here -->
-    </div>
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModals()">Cancel</button>
-      <button class="primary-btn" onclick="sendBulkMessage()">Send</button>
-    </div>
-  </div>
-</div>
-
-<!-- Template Message Modal -->
-<div class="modal" id="templateModal">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeModals()">&times;</span>
-    <div class="modal-title">Message Templates</div>
-    <select id="templateSelect" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px;">
-      <option value="">-- Select Template --</option>
-      <option value="Welcome! How can I help you today?">Welcome Message</option>
-      <option value="Thanks for reaching out! We'll get back to you soon.">Thank You</option>
-      <option value="Your issue has been resolved. Let us know if you need anything else!">Follow Up</option>
-    </select>
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModals()">Cancel</button>
-      <button class="primary-btn" onclick="useTemplate()">Use Template</button>
-    </div>
-  </div>
-</div>
-
-<!-- Schedule Message Modal -->
-<div class="modal" id="scheduleModal">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeModals()">&times;</span>
-    <div class="modal-title">Schedule Message</div>
-    <input type="datetime-local" id="scheduleTime" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px;">
-    <textarea id="scheduleMessage" placeholder="Enter your message..."></textarea>
-    <div class="fan-checkboxes" id="fanCheckboxesForSchedule">
-      <!-- Fan checkboxes will be loaded here -->
-    </div>
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModals()">Cancel</button>
-      <button class="primary-btn" onclick="scheduleMessage()">Schedule</button>
-    </div>
-  </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script> 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDWRfmNGsp3cBvD5mODOj1g7uOFbWXph-k",
@@ -811,113 +387,73 @@ const firebaseConfig = {
   storageBucket: "exclusivechat-64482.appspot.com",
   messagingSenderId: "159353508205",
   appId: "1:159353508205:web:595954835fac71ef53ca64",
-  databaseURL: "https://exclusivechat-64482-default-rtdb.firebaseio.com/"  
+  databaseURL: "https://exclusivechat-64482-default-rtdb.firebaseio.com/" 
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 const adminUID = "yEDB99AJniWaOXfVwVex5qWMWiA2";
 
-// App state
 let selectedFan = '';
 let activeChatRef = null;
 let usersData = {};
 
-// DOM elements
-const loginPanel = document.getElementById('loginPanel');
-const adminPanel = document.getElementById('adminPanel');
-const fanList = document.getElementById('fanList');
-const chatArea = document.getElementById('chatArea');
-const chatMessages = document.getElementById('chatMessages');
-const chatBack = document.getElementById('chatBack');
-const chatUserInfo = document.getElementById('chatUserInfo');
-const adminMessage = document.getElementById('adminMessage');
-const sendButton = document.getElementById('sendButton');
-
-// Initialize the app
 function init() {
-  // Check for responsive layout
-  checkResponsive();
   window.addEventListener('resize', checkResponsive);
-  
-  // Enable/disable send button based on input
-  adminMessage.addEventListener('input', function() {
-    sendButton.disabled = this.value.trim() === '';
+  adminMessage.addEventListener('input', () => {
+    document.getElementById('sendButton').disabled = !adminMessage.value.trim();
   });
-  
-  // Handle Enter key press
-  adminMessage.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && !sendButton.disabled) {
-      sendAdminMessage();
-    }
-  });
-  
-  // Back button for mobile
-  chatBack.addEventListener('click', function() {
+  chatBack.addEventListener('click', () => {
     chatArea.classList.remove('active');
   });
 }
 
-// Check responsive layout
 function checkResponsive() {
-  if (window.innerWidth <= 768) {
-    chatArea.classList.remove('active');
-  } else if (selectedFan) {
+  if (window.innerWidth <= 768 && selectedFan) {
     chatArea.classList.add('active');
+    document.querySelector('.sidebar').style.display = 'none';
+  } else {
+    document.querySelector('.sidebar').style.display = 'block';
   }
 }
 
-// Admin login
 function adminLogin() {
   const email = document.getElementById('adminEmail').value;
   const password = document.getElementById('adminPassword').value;
   const loginStatus = document.getElementById('loginStatus');
-  
-  loginStatus.textContent = '';
-  
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCred => {
-      if (userCred.user.uid === adminUID) {
-        loginPanel.style.display = 'none';
-        adminPanel.style.display = 'block';
-        init();
-        loadFans();
-      } else {
-        loginStatus.textContent = "Access denied. You are not an admin.";
-        auth.signOut();
-      }
-    })
-    .catch(err => {
-      loginStatus.textContent = "Login failed: " + err.message;
-    });
+  auth.signInWithEmailAndPassword(email, password).then(userCred => {
+    if (userCred.user.uid === adminUID) {
+      loginPanel.style.display = 'none';
+      adminPanel.style.display = 'flex';
+      init();
+      loadFans();
+    } else {
+      loginStatus.textContent = "Access denied.";
+      auth.signOut();
+    }
+  }).catch(err => loginStatus.textContent = "Login failed: " + err.message);
 }
 
-// Check auth state
 auth.onAuthStateChanged(user => {
   if (user && user.uid === adminUID) {
     loginPanel.style.display = 'none';
-    adminPanel.style.display = 'block';
+    adminPanel.style.display = 'flex';
     init();
     loadFans();
   }
 });
 
-// Load fans list
 function loadFans() {
   db.ref('users').on('value', snap => {
     usersData = snap.val() || {};
-    fanList.innerHTML = '';
-    
+    document.getElementById('fanList').innerHTML = '<div class="user-search"><input type="text" placeholder="Search"></div>';
     Object.values(usersData).forEach(user => {
       const userItem = document.createElement('div');
       userItem.className = 'user-item';
-      userItem.id = `user-${user.fanName}`;
       userItem.innerHTML = `
         <div class="user-avatar">
           <div class="user-avatar-inner">
-            <span>${user.fanName.charAt(0).toUpperCase()}</span>
+            <span>${user.fanName.charAt(0)}</span>
           </div>
         </div>
         <div class="user-info">
@@ -925,380 +461,95 @@ function loadFans() {
           <div class="user-last-message" id="last-msg-${user.fanName}"></div>
         </div>
         <div class="message-time" id="time-${user.fanName}"></div>
-        <div class="unread-dot" id="dot-${user.fanName}" style="display: none;"></div>
+        <div class="unread-dot" id="dot-${user.fanName}" style="display:none;"></div>
       `;
-      
       userItem.addEventListener('click', () => loadFanChat(user.fanName));
-      fanList.appendChild(userItem);
-      
-      // Load last message and unread status
+      document.getElementById('fanList').appendChild(userItem);
       loadLastMessage(user.fanName);
     });
   });
 }
 
-// Load last message for a user
 function loadLastMessage(fanName) {
   db.ref(`chats/${fanName}`).orderByChild('timestamp').limitToLast(1).on('child_added', snapshot => {
     const msg = snapshot.val();
-    if (msg.sender === 'admin') {
-      document.getElementById(`last-msg-${fanName}`).textContent = `You: ${msg.text.substring(0, 20)}${msg.text.length > 20 ? '...' : ''}`;
-    } else {
-      document.getElementById(`last-msg-${fanName}`).textContent = `${msg.text.substring(0, 20)}${msg.text.length > 20 ? '...' : ''}`;
-    }
-    
-    const date = new Date(msg.timestamp);
-    document.getElementById(`time-${fanName}`).textContent = formatTime(date);
+    const lastMsgEl = document.getElementById(`last-msg-${fanName}`);
+    const timeEl = document.getElementById(`time-${fanName}`);
+    lastMsgEl.textContent = msg.sender === 'admin' ? `You: ${msg.text.slice(0,20)}${msg.text.length > 20 ? '...' : ''}` : msg.text.slice(0,20) + (msg.text.length > 20 ? '...' : '');
+    timeEl.textContent = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   });
-  
-  // Check for unread messages
+
   db.ref(`chats/${fanName}`).on('value', chatSnap => {
     let hasUnread = false;
     chatSnap.forEach(msg => {
       const val = msg.val();
-      if (val?.sender !== 'admin' && val?.status !== 'seen') {
-        hasUnread = true;
-      }
+      if (val?.sender !== 'admin' && val?.status !== 'seen') hasUnread = true;
     });
-    
     document.getElementById(`dot-${fanName}`).style.display = hasUnread ? 'block' : 'none';
   });
 }
 
-// Load chat for a specific fan
 function loadFanChat(fanName) {
   selectedFan = fanName;
-  
-  // Update UI
-  document.querySelectorAll('.user-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  document.getElementById(`user-${fanName}`).classList.add('active');
-  
-  // Hide the red dot immediately when chat is opened
-  document.getElementById(`dot-${fanName}`).style.display = 'none';
-  
-  // Set chat header
-  chatUserInfo.innerHTML = `
-    <div class="chat-user-avatar">
-      <div class="chat-user-avatar-inner">
-        <span>${fanName.charAt(0).toUpperCase()}</span>
-      </div>
-    </div>
-    <div class="chat-user-name">${fanName}</div>
-  `;
-  
-  // Show chat area (for mobile)
+  document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
+  document.querySelector(`.user-item:nth-child(${Object.keys(usersData).indexOf(fanName)+2})`).classList.add('active');
+
+  document.getElementById('dot-'+fanName).style.display = 'none';
+
+  chatUserInfo.innerHTML = `<div class="chat-user-avatar"><div class="chat-user-avatar-inner"><span>${fanName.charAt(0)}</span></div></div><div class="chat-user-name">${fanName}</div>`;
   chatArea.classList.add('active');
-  
-  // Clear and load messages
+  document.querySelector('.sidebar').style.display = 'none';
+
   chatMessages.innerHTML = '';
   if (activeChatRef) activeChatRef.off();
-  
   activeChatRef = db.ref(`chats/${fanName}`);
   activeChatRef.orderByChild('timestamp').on('child_added', snapshot => {
     const data = snapshot.val();
     if (snapshot.key === 'typingStatus') return;
     displayMessage(data.text, data.sender, data.timestamp, data.status, snapshot.key);
   });
-  
-  // Typing status listener
-  db.ref(`chats/${fanName}/typingStatus/fan`).on('value', snap => {
-    const typingStatus = document.getElementById('typingStatus');
-    if (snap.val() === 'typing') {
-      typingStatus.innerHTML = `
-        <span>${fanName} is typing</span>
-        <div class="typing-dots">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      `;
-    } else {
-      typingStatus.innerHTML = '';
-    }
-  });
-  
-  // Mark messages as seen - this is the fixed version
+
+  // Mark all messages as seen
   db.ref(`chats/${fanName}`).once('value', snap => {
     const updates = {};
-    let hasUpdates = false;
-    
     snap.forEach(child => {
       const key = child.key;
       const val = child.val();
-      
       if (key !== 'typingStatus' && val.sender !== 'admin' && val.status !== 'seen') {
         updates[`${key}/status`] = 'seen';
-        hasUpdates = true;
       }
     });
-    
-    if (hasUpdates) {
-      db.ref(`chats/${fanName}`).update(updates)
-        .then(() => {
-          console.log('All messages marked as seen');
-          // Force refresh the dot status
-          db.ref(`chats/${fanName}`).once('value', () => {
-            document.getElementById(`dot-${fanName}`).style.display = 'none';
-          });
-        })
-        .catch(error => {
-          console.error('Error updating message status:', error);
-        });
-    }
+    db.ref(`chats/${fanName}`).update(updates);
   });
 }
-// Display a message in the chat
+
 function displayMessage(text, sender, timestamp, status, messageId) {
   const isAdmin = sender === 'admin';
   const date = new Date(timestamp);
-  const timeString = formatTime(date);
-  
-  // Create message element
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isAdmin ? 'sent' : 'received'}`;
-  
-  // Process content (links, images, etc.)
-  const processedContent = processContentWithMedia(text);
-  
-  // Set message HTML
-  messageDiv.innerHTML = `
-    ${processedContent}
-    <div class="message-time">${timeString} ${isAdmin ? `<span class="message-status">${status === 'seen' ? '✓✓' : '✓'}</span>` : ''}</div>
-    <div class="message-options">
-      <i class="fas fa-ellipsis-h"></i>
-    </div>
-  `;
-  
-  // Add click handler for message options
-  const optionsBtn = messageDiv.querySelector('.message-options i');
-  optionsBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (confirm('Delete this message?')) {
-      db.ref(`chats/${selectedFan}/${messageId}`).remove();
-    }
-  });
-  
+  messageDiv.innerHTML = `${text}<div class="message-time">${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
-  
-  // Update last message in sidebar
-  if (sender === 'admin') {
-    document.getElementById(`last-msg-${selectedFan}`).textContent = `You: ${text.substring(0, 20)}${text.length > 20 ? '...' : ''}`;
-  } else {
-    document.getElementById(`last-msg-${selectedFan}`).textContent = `${text.substring(0, 20)}${text.length > 20 ? '...' : ''}`;
-  }
-  document.getElementById(`time-${selectedFan}`).textContent = timeString;
 }
 
-// Send admin message
 function sendAdminMessage() {
   const msg = adminMessage.value.trim();
   if (!msg || !selectedFan) return;
-  
   db.ref(`chats/${selectedFan}`).push({
     sender: 'admin',
     text: msg,
     timestamp: Date.now(),
     status: 'sent'
   });
-  
   adminMessage.value = '';
-  sendButton.disabled = true;
+  document.getElementById('sendButton').disabled = true;
 }
 
-// Send typing status
 function sendTypingStatus() {
   if (!selectedFan) return;
   db.ref(`chats/${selectedFan}/typingStatus/admin`).set('typing');
-  setTimeout(() => {
-    db.ref(`chats/${selectedFan}/typingStatus/admin`).set('');
-  }, 2000);
-}
-
-// Process content with media (images, links)
-function processContentWithMedia(text) {
-  if (!text) return '';
-  
-  // Check if text is a single image URL
-  const imageRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp)(?:\?.*)?)/i;
-  const imageMatch = text.match(imageRegex);
-  if (imageMatch && text.trim() === imageMatch[0]) {
-    return `<img src="${text}" class="message-image" onclick="openImagePopup('${text}')">`;
-  }
-  
-  // Check for links in text
-  const linkRegex = /(https?:\/\/[^\s]+)/g;
-  if (linkRegex.test(text)) {
-    // Replace links with previews
-    return text.replace(linkRegex, url => {
-      if (/\.(png|jpg|jpeg|gif|webp)(\?.*)?$/i.test(url)) {
-        return `<img src="${url}" class="message-image" onclick="openImagePopup('${url}')">`;
-      } else {
-        return createLinkPreview(url);
-      }
-    });
-  }
-  
-  // Regular text
-  return text;
-}
-
-// Create link preview element
-function createLinkPreview(url) {
-  return `
-    <div class="message-link" onclick="window.open('${url}', '_blank')">
-      <div class="link-preview-content">
-        <div class="link-preview-title">${extractDomain(url)}</div>
-        <div class="link-preview-url">${url}</div>
-      </div>
-    </div>
-  `;
-}
-
-// Extract domain from URL
-function extractDomain(url) {
-  try {
-    const domain = new URL(url).hostname.replace('www.', '');
-    return domain.charAt(0).toUpperCase() + domain.slice(1);
-  } catch {
-    return url;
-  }
-}
-
-// Format time
-function formatTime(date) {
-  const now = new Date();
-  const diff = now - date;
-  const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } else if (diffDays === 1) {
-    return 'Yesterday';
-  } else if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: 'short' });
-  } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  }
-}
-
-// Image popup functions
-function openImagePopup(imageUrl) {
-  const popup = document.getElementById('imagePopup');
-  const popupImg = document.getElementById('popupImage');
-  popup.style.display = 'flex';
-  popupImg.src = imageUrl;
-  document.body.style.overflow = 'hidden';
-}
-
-function closeImagePopup() {
-  document.getElementById('imagePopup').style.display = 'none';
-  document.body.style.overflow = 'auto';
-}
-
-// Modal functions
-function openModal(type) {
-  closeModals();
-  document.getElementById(`${type}Modal`).style.display = 'flex';
-  
-  if (type === 'bulk' || type === 'schedule') {
-    loadFanCheckboxes(type);
-  }
-}
-
-function closeModals() {
-  document.querySelectorAll('.modal').forEach(el => {
-    el.style.display = 'none';
-  });
-}
-
-function loadFanCheckboxes(modalType) {
-  const container = modalType === 'bulk' 
-    ? document.getElementById('fanCheckboxes') 
-    : document.getElementById('fanCheckboxesForSchedule');
-  
-  container.innerHTML = '';
-  
-  Object.values(usersData).forEach(user => {
-    const checkboxItem = document.createElement('div');
-    checkboxItem.className = 'fan-checkbox-item';
-    checkboxItem.innerHTML = `
-      <input type="checkbox" value="${user.fanName}" id="cb-${modalType}-${user.fanName}">
-      <label for="cb-${modalType}-${user.fanName}">${user.fanName}</label>
-    `;
-    container.appendChild(checkboxItem);
-  });
-}
-
-function sendBulkMessage() {
-  const msg = document.getElementById('bulkMessageInput').value.trim();
-  if (!msg) {
-    alert("Please enter a message.");
-    return;
-  }
-  
-  const checked = document.querySelectorAll('#fanCheckboxes input:checked');
-  if (checked.length === 0) {
-    alert("Select at least one user.");
-    return;
-  }
-  
-  checked.forEach(cb => {
-    db.ref(`chats/${cb.value}`).push({
-      sender: 'admin',
-      text: msg,
-      timestamp: Date.now(),
-      status: 'sent'
-    });
-  });
-  
-  alert(`${checked.length} messages sent.`);
-  closeModals();
-}
-
-function useTemplate() {
-  const template = document.getElementById('templateSelect').value;
-  if (!template) {
-    alert("Select a template.");
-    return;
-  }
-  
-  adminMessage.value = template;
-  sendButton.disabled = false;
-  closeModals();
-}
-
-function scheduleMessage() {
-  const time = new Date(document.getElementById('scheduleTime').value).getTime();
-  const msg = document.getElementById('scheduleMessage').value.trim();
-  const checked = document.querySelectorAll('#fanCheckboxesForSchedule input:checked');
-  
-  if (!msg || checked.length === 0 || isNaN(time)) {
-    alert("Fill in all fields.");
-    return;
-  }
-  
-  const delay = time - Date.now();
-  if (delay < 0) {
-    alert("Schedule time must be in the future.");
-    return;
-  }
-  
-  checked.forEach(cb => {
-    setTimeout(() => {
-      db.ref(`chats/${cb.value}`).push({
-        sender: 'admin',
-        text: msg,
-        timestamp: Date.now(),
-        status: 'sent'
-      });
-    }, delay);
-  });
-  
-  alert(`Message scheduled for ${new Date(time).toLocaleString()}`);
-  closeModals();
+  setTimeout(() => db.ref(`chats/${selectedFan}/typingStatus/admin`).set(''), 2000);
 }
 </script>
 </body>
