@@ -639,6 +639,32 @@ function openImagePopup(url) {
 function closeImagePopup() {
   document.getElementById('imagePopup').style.display = 'none';
 }
+
+
+
+
+
+  // Back button for mobile
+chatBack.addEventListener('click', function () {
+  chatArea.classList.remove('active');       // Hide chat
+  document.querySelector('.sidebar').style.display = 'block'; // Show sidebar
+  selectedFan = '';                         // Reset selected fan
+});
+
+
+  function checkResponsive() {
+  if (window.innerWidth <= 768) {
+    if (!selectedFan) {
+      chatArea.classList.remove('active');
+      document.querySelector('.sidebar').style.display = 'block';
+    } else {
+      document.querySelector('.sidebar').style.display = 'none';
+    }
+  } else {
+    chatArea.classList.add('active');
+    document.querySelector('.sidebar').style.display = 'block';
+  }
+}
 </script>
 </body>
 </html>
