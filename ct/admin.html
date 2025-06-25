@@ -474,7 +474,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script> 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script> 
 <script>
-// Firebase Configuration
+  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyDWRfmNGsp3cBvD5mODOj1g7uOFbWXph-k",
     authDomain: "exclusivechat-64482.firebaseapp.com",
@@ -493,23 +493,37 @@
   let selectedFan = '';
   let activeChatRef = null;
 
-  // Initialize App (called on login)
+  // Initialize App
   function init() {
     window.addEventListener('resize', checkResponsive);
+
+    // Enable/disable send button based on input
     document.getElementById('adminMessage').addEventListener('input', () => {
       document.getElementById('sendButton').disabled = !document.getElementById('adminMessage').value.trim();
     });
 
+    // Mobile back button functionality
     document.getElementById('chatBack').addEventListener('click', () => {
       document.getElementById('chatArea').classList.remove('active');
       document.querySelector('.sidebar').style.display = 'block';
       selectedFan = '';
     });
 
+    // Attach search input listener
+    document.querySelector('.user-search input').addEventListener('input', function () {
+      const searchTerm = this.value.trim().toLowerCase();
+      const userItems = document.querySelectorAll('.user-item');
+
+      userItems.forEach(item => {
+        const userName = item.querySelector('.user-name').textContent.toLowerCase();
+        item.style.display = userName.includes(searchTerm) ? 'flex' : 'none';
+      });
+    });
+
     checkResponsive(); // Initial responsive check
   }
 
-  // Responsive Behavior
+  // Responsive Layout Handling
   function checkResponsive() {
     if (window.innerWidth <= 768) {
       if (!selectedFan) {
@@ -525,7 +539,7 @@
     }
   }
 
-  // Admin Login Function
+  // Admin Login
   function adminLogin() {
     const email = document.getElementById('adminEmail').value;
     const password = document.getElementById('adminPassword').value;
@@ -561,8 +575,12 @@
     db.ref('users').on('value', snap => {
       const usersData = snap.val() || {};
       const fanListDiv = document.getElementById('fanList');
-      fanListDiv.innerHTML = '<div class="user-search"><input type="text" placeholder="Search"></div>';
-      
+      fanListDiv.innerHTML = `
+        <div class="user-search">
+          <input type="text" placeholder="Search">
+        </div>
+      `;
+
       Object.values(usersData).forEach(user => {
         const safeName = user.fanName.replace(/[^a-zA-Z0-9]/g, '_');
         const userItem = document.createElement('div');
@@ -585,6 +603,28 @@
         fanListDiv.appendChild(userItem);
         loadLastMessage(user.fanName);
       });
+
+      // Reattach search event after updating DOM
+      attachSearchListener();
+    });
+  }
+
+  // Attach search listener dynamically after DOM update
+  function attachSearchListener() {
+    const searchInput = document.querySelector('.user-search input');
+    if (searchInput) {
+      searchInput.removeEventListener('input', handleSearch);
+      searchInput.addEventListener('input', handleSearch);
+    }
+  }
+
+  function handleSearch() {
+    const searchTerm = this.value.trim().toLowerCase();
+    const userItems = document.querySelectorAll('.user-item');
+
+    userItems.forEach(item => {
+      const userName = item.querySelector('.user-name').textContent.toLowerCase();
+      item.style.display = userName.includes(searchTerm) ? 'flex' : 'none';
     });
   }
 
@@ -606,7 +646,7 @@
   function loadFanChat(fanName) {
     selectedFan = fanName;
     const safeName = fanName.replace(/[^a-zA-Z0-9]/g, '_');
-    
+
     document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
     document.getElementById(`user-${safeName}`).classList.add('active');
     document.getElementById(`dot-${safeName}`).style.display = 'none';
@@ -710,7 +750,6 @@
   function closeImagePopup() {
     document.getElementById('imagePopup').style.display = 'none';
   }
-
 </script>
 </body>
 </html>
