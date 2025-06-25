@@ -269,6 +269,7 @@
       border-radius: 18px;
       font-size: 14px;
       line-height: 1.4;
+      position: relative;
     }
     .message.sent {
       align-self: flex-end;
@@ -280,6 +281,33 @@
       background: var(--bg-white);
       color: var(--text-dark);
       border: 1px solid var(--border);
+    }
+    .message-image {
+      max-width: 250px;
+      border-radius: 12px;
+      margin-top: 5px;
+      cursor: pointer;
+    }
+    .message-options {
+      position: absolute;
+      top: 5px;
+      right: -25px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .message:hover .message-options {
+      opacity: 1;
+    }
+    .message-options i {
+      font-size: 16px;
+      color: var(--text-light);
+      cursor: pointer;
+    }
+    .message-time {
+      font-size: 10px;
+      color: var(--text-light);
+      margin-top: 2px;
+      text-align: right;
     }
     .chat-input {
       display: flex;
@@ -322,9 +350,36 @@
         display: block;
       }
     }
+    /* Image Popup */
+    .image-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+    .popup-image {
+      max-width: 90%;
+      max-height: 90%;
+    }
+    .close-popup {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+
 <!-- Login Panel -->
 <div class="login-panel" id="loginPanel">
   <h3>Admin Login</h3>
@@ -368,11 +423,17 @@
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input">
-        <input type="text" id="adminMessage" placeholder="Message..." oninput="sendTypingStatus()">
+        <input type="text" id="adminMessage" placeholder="Message...">
         <button id="sendButton" onclick="sendAdminMessage()" disabled>Send</button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Image Popup -->
+<div class="image-popup" id="imagePopup">
+  <span class="close-popup" onclick="closeImagePopup()">&times;</span>
+  <img class="popup-image" id="popupImage">
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script> 
@@ -388,193 +449,118 @@ const firebaseConfig = {
   appId: "1:159353508205:web:595954835fac71ef53ca64",
   databaseURL: "https://exclusivechat-64482-default-rtdb.firebaseio.com/" 
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 const adminUID = "yEDB99AJniWaOXfVwVex5qWMWiA2";
 
-// App state
 let selectedFan = '';
 let activeChatRef = null;
-let usersData = {};
 
-// DOM elements
-const loginPanel = document.getElementById('loginPanel');
-const adminPanel = document.getElementById('adminPanel');
-const fanList = document.getElementById('fanList');
-const chatArea = document.getElementById('chatArea');
-const chatMessages = document.getElementById('chatMessages');
-const chatBack = document.getElementById('chatBack');
-const chatUserInfo = document.getElementById('chatUserInfo');
-const adminMessage = document.getElementById('adminMessage');
-const sendButton = document.getElementById('sendButton');
-
-// Sanitize fan name for use in DOM ID
-function sanitizeFanName(name) {
-  return name.replace(/[^a-zA-Z0-9]/g, '_');
-}
-
-// Initialize the app
 function init() {
-  checkResponsive();
   window.addEventListener('resize', checkResponsive);
-
-  // Enable/disable send button based on input
-  adminMessage.addEventListener('input', function () {
-    sendButton.disabled = this.value.trim() === '';
+  adminMessage.addEventListener('input', () => {
+    document.getElementById('sendButton').disabled = !adminMessage.value.trim();
   });
-
-  // Handle Enter key press
-  adminMessage.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter' && !sendButton.disabled) {
-      sendAdminMessage();
-    }
-  });
-
-  // Back button for mobile
-  chatBack.addEventListener('click', function () {
-    chatArea.classList.remove('active');
+  document.getElementById('chatBack').addEventListener('click', () => {
+    document.getElementById('chatArea').classList.remove('active');
   });
 }
 
-// Check responsive layout
 function checkResponsive() {
-  if (window.innerWidth <= 768) {
-    chatArea.classList.remove('active');
-  } else if (selectedFan) {
-    chatArea.classList.add('active');
+  if (window.innerWidth <= 768 && selectedFan) {
+    document.querySelector('.sidebar').style.display = 'none';
+    document.getElementById('chatArea').classList.add('active');
+  } else {
+    document.querySelector('.sidebar').style.display = 'block';
   }
 }
 
-// Admin login
 function adminLogin() {
   const email = document.getElementById('adminEmail').value;
   const password = document.getElementById('adminPassword').value;
   const loginStatus = document.getElementById('loginStatus');
-  loginStatus.textContent = '';
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCred => {
-      if (userCred.user.uid === adminUID) {
-        loginPanel.style.display = 'none';
-        adminPanel.style.display = 'block';
-        init();
-        loadFans();
-      } else {
-        loginStatus.textContent = "Access denied. You are not an admin.";
-        auth.signOut();
-      }
-    })
-    .catch(err => {
-      loginStatus.textContent = "Login failed: " + err.message;
-    });
+  auth.signInWithEmailAndPassword(email, password).then(userCred => {
+    if (userCred.user.uid === adminUID) {
+      document.getElementById('loginPanel').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'flex';
+      init();
+      loadFans();
+    } else {
+      loginStatus.textContent = "Access denied.";
+      auth.signOut();
+    }
+  }).catch(err => loginStatus.textContent = "Login failed: " + err.message);
 }
 
-// Load fans list
+auth.onAuthStateChanged(user => {
+  if (user && user.uid === adminUID) {
+    document.getElementById('loginPanel').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'flex';
+    init();
+    loadFans();
+  }
+});
+
 function loadFans() {
   db.ref('users').on('value', snap => {
-    usersData = snap.val() || {};
-    fanList.innerHTML = '';
-
+    const usersData = snap.val() || {};
+    document.getElementById('fanList').innerHTML = '<div class="user-search"><input type="text" placeholder="Search"></div>';
     Object.values(usersData).forEach(user => {
-      const safeFanName = sanitizeFanName(user.fanName);
-
+      const safeName = user.fanName.replace(/[^a-zA-Z0-9]/g, '_');
       const userItem = document.createElement('div');
       userItem.className = 'user-item';
-      userItem.id = `user-${safeFanName}`;
+      userItem.id = `user-${safeName}`;
       userItem.innerHTML = `
         <div class="user-avatar">
           <div class="user-avatar-inner">
-            <span>${user.fanName.charAt(0).toUpperCase()}</span>
+            <span>${user.fanName.charAt(0)}</span>
           </div>
         </div>
         <div class="user-info">
           <div class="user-name">${user.fanName}</div>
-          <div class="user-last-message" id="last-msg-${safeFanName}"></div>
+          <div class="user-last-message" id="last-msg-${safeName}"></div>
         </div>
-        <div class="message-time" id="time-${safeFanName}"></div>
-        <div class="unread-dot" id="dot-${safeFanName}" style="display: none;"></div>
+        <div class="message-time" id="time-${safeName}"></div>
+        <div class="unread-dot" id="dot-${safeName}" style="display:none;"></div>
       `;
       userItem.addEventListener('click', () => loadFanChat(user.fanName));
-      fanList.appendChild(userItem);
+      document.getElementById('fanList').appendChild(userItem);
       loadLastMessage(user.fanName);
     });
   });
 }
 
-// Load last message for a user
 function loadLastMessage(fanName) {
-  const safeFanName = sanitizeFanName(fanName);
+  const safeName = fanName.replace(/[^a-zA-Z0-9]/g, '_');
   db.ref(`chats/${fanName}`).orderByChild('timestamp').limitToLast(1).on('child_added', snapshot => {
     const msg = snapshot.val();
-    if (!msg) return;
+    const lastMsgEl = document.getElementById(`last-msg-${safeName}`);
+    const timeEl = document.getElementById(`time-${safeName}`);
 
-    const lastMsgEl = document.getElementById(`last-msg-${safeFanName}`);
-    const timeEl = document.getElementById(`time-${safeFanName}`);
+    lastMsgEl.textContent = msg.text.slice(0, 20) + (msg.text.length > 20 ? '...' : '');
+    timeEl.textContent = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    if (msg.sender === 'admin') {
-      lastMsgEl.textContent = `You: ${msg.text.substring(0, 20)}${msg.text.length > 20 ? '...' : ''}`;
-    } else {
-      lastMsgEl.textContent = `${msg.text.substring(0, 20)}${msg.text.length > 20 ? '...' : ''}`;
-    }
-
-    const date = new Date(msg.timestamp);
-    timeEl.textContent = formatTime(date);
-  });
-
-  db.ref(`chats/${fanName}`).on('value', chatSnap => {
-    let hasUnread = false;
-    chatSnap.forEach(msg => {
-      const val = msg.val();
-      if (val?.sender !== 'admin' && val?.status !== 'seen') {
-        hasUnread = true;
-      }
-    });
-    const dotElement = document.getElementById(`dot-${safeFanName}`);
-    if (dotElement) {
-      dotElement.style.display = hasUnread ? 'block' : 'none';
-    }
+    // Only show unread dot if the last message is from user and not seen
+    const dot = document.getElementById(`dot-${safeName}`);
+    dot.style.display = (msg.sender !== 'admin') ? 'block' : 'none';
   });
 }
 
-// Load chat for a specific fan
 function loadFanChat(fanName) {
   selectedFan = fanName;
-  const safeFanName = sanitizeFanName(fanName);
+  const safeName = fanName.replace(/[^a-zA-Z0-9]/g, '_');
 
-  // Remove active class from all users
-  document.querySelectorAll('.user-item').forEach(item => {
-    item.classList.remove('active');
-  });
+  document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
+  document.getElementById(`user-${safeName}`).classList.add('active');
 
-  // Add active class to selected user
-  const userElement = document.getElementById(`user-${safeFanName}`);
-  if (userElement) {
-    userElement.classList.add('active');
-  }
+  document.getElementById('dot-'+safeName).style.display = 'none';
 
-  // Immediately hide unread dot
-  const dotElement = document.getElementById(`dot-${safeFanName}`);
-  if (dotElement) {
-    dotElement.style.display = 'none';
-  }
+  document.getElementById('chatUserInfo').innerHTML = `<div class="chat-user-avatar"><div class="chat-user-avatar-inner"><span>${fanName.charAt(0)}</span></div></div><div class="chat-user-name">${fanName}</div>`;
+  document.getElementById('chatArea').classList.add('active');
+  document.querySelector('.sidebar').style.display = 'none';
 
-  // Set chat header
-  chatUserInfo.innerHTML = `
-    <div class="chat-user-avatar">
-      <div class="chat-user-avatar-inner">
-        <span>${fanName.charAt(0).toUpperCase()}</span>
-      </div>
-    </div>
-    <div class="chat-user-name">${fanName}</div>
-  `;
-
-  // Show chat area (for mobile)
-  chatArea.classList.add('active');
-
-  // Clear and load messages
+  const chatMessages = document.getElementById('chatMessages');
   chatMessages.innerHTML = '';
   if (activeChatRef) activeChatRef.off();
 
@@ -582,109 +568,76 @@ function loadFanChat(fanName) {
   activeChatRef.orderByChild('timestamp').on('child_added', snapshot => {
     const data = snapshot.val();
     if (snapshot.key === 'typingStatus') return;
-    displayMessage(data.text, data.sender, data.timestamp, data.status, snapshot.key);
-  });
-
-  // Typing status listener
-  db.ref(`chats/${fanName}/typingStatus/fan`).on('value', snap => {
-    const typingStatus = document.getElementById('typingStatus');
-    if (snap.val() === 'typing') {
-      typingStatus.innerHTML = `
-        <span>${fanName} is typing</span>
-        <div class="typing-dots">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      `;
-    } else {
-      typingStatus.innerHTML = '';
-    }
+    displayMessage(data.text, data.sender, data.timestamp, snapshot.key);
   });
 
   // Mark all messages as seen
   db.ref(`chats/${fanName}`).once('value', snap => {
     const updates = {};
-    let hasUpdates = false;
-
     snap.forEach(child => {
       const key = child.key;
       const val = child.val();
-      if (key !== 'typingStatus' && val?.sender !== 'admin' && val?.status !== 'seen') {
+      if (key !== 'typingStatus' && val.sender !== 'admin' && val.status !== 'seen') {
         updates[`${key}/status`] = 'seen';
-        hasUpdates = true;
       }
     });
-
-    if (hasUpdates) {
-      db.ref(`chats/${fanName}`).update(updates)
-        .then(() => {
-          console.log('All messages marked as seen.');
-        })
-        .catch(error => {
-          console.error('Error updating message status:', error);
-        });
-    }
+    db.ref(`chats/${fanName}`).update(updates);
   });
 }
 
-// Display a message in the chat
-function displayMessage(text, sender, timestamp, status, messageId) {
+function displayMessage(text, sender, timestamp, messageId) {
   const isAdmin = sender === 'admin';
-  const date = new Date(timestamp);
-  const timeString = formatTime(date);
-
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isAdmin ? 'sent' : 'received'}`;
+
+  let content = '';
+  const urlRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi;
+  if (urlRegex.test(text)) {
+    content += `<img src="${text}" class="message-image" onclick="openImagePopup('${text}')">`;
+  } else {
+    content += text;
+  }
+
   messageDiv.innerHTML = `
-    ${text}
-    <div class="message-time">${timeString}</div>
+    ${content}
+    <div class="message-time">${new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+    <div class="message-options">
+      <i class="fas fa-trash-alt" onclick="deleteMessage('${messageId}')"></i>
+    </div>
   `;
 
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Send admin message
 function sendAdminMessage() {
   const msg = adminMessage.value.trim();
   if (!msg || !selectedFan) return;
-
   db.ref(`chats/${selectedFan}`).push({
     sender: 'admin',
     text: msg,
     timestamp: Date.now(),
     status: 'sent'
   });
-
   adminMessage.value = '';
-  sendButton.disabled = true;
+  document.getElementById('sendButton').disabled = true;
 }
 
-// Send typing status
-function sendTypingStatus() {
-  if (!selectedFan) return;
-  db.ref(`chats/${selectedFan}/typingStatus/admin`).set('typing');
-  setTimeout(() => {
-    db.ref(`chats/${selectedFan}/typingStatus/admin`).set('');
-  }, 2000);
-}
-
-// Format time
-function formatTime(date) {
-  const now = new Date();
-  const diff = now - date;
-  const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } else if (diffDays === 1) {
-    return 'Yesterday';
-  } else if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: 'short' });
-  } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+function deleteMessage(id) {
+  if (confirm("Delete this message?")) {
+    db.ref(`chats/${selectedFan}/${id}`).remove();
   }
+}
+
+function openImagePopup(url) {
+  const popup = document.getElementById('imagePopup');
+  const img = document.getElementById('popupImage');
+  img.src = url;
+  popup.style.display = 'flex';
+}
+
+function closeImagePopup() {
+  document.getElementById('imagePopup').style.display = 'none';
 }
 </script>
 </body>
