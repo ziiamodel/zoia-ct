@@ -15,7 +15,6 @@
       --text-light: #8e8e8e;
       --bg-white: #ffffff;
       --bg-gray: #fafafa;
-      --bg-dark: #000000;
       --story-gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
       --red-dot: #ed4956;
     }
@@ -405,6 +404,7 @@ function init() {
   });
   chatBack.addEventListener('click', () => {
     chatArea.classList.remove('active');
+    document.querySelector('.sidebar').style.display = 'block';
   });
 }
 
@@ -448,8 +448,10 @@ function loadFans() {
     usersData = snap.val() || {};
     document.getElementById('fanList').innerHTML = '<div class="user-search"><input type="text" placeholder="Search"></div>';
     Object.values(usersData).forEach(user => {
+      const safeFanName = user.fanName.replace(/[^a-zA-Z0-9]/g, '_');
       const userItem = document.createElement('div');
       userItem.className = 'user-item';
+      userItem.id = `user-${safeFanName}`;
       userItem.innerHTML = `
         <div class="user-avatar">
           <div class="user-avatar-inner">
@@ -458,10 +460,10 @@ function loadFans() {
         </div>
         <div class="user-info">
           <div class="user-name">${user.fanName}</div>
-          <div class="user-last-message" id="last-msg-${user.fanName}"></div>
+          <div class="user-last-message" id="last-msg-${safeFanName}"></div>
         </div>
-        <div class="message-time" id="time-${user.fanName}"></div>
-        <div class="unread-dot" id="dot-${user.fanName}" style="display:none;"></div>
+        <div class="message-time" id="time-${safeFanName}"></div>
+        <div class="unread-dot" id="dot-${safeFanName}" style="display:none;"></div>
       `;
       userItem.addEventListener('click', () => loadFanChat(user.fanName));
       document.getElementById('fanList').appendChild(userItem);
@@ -471,10 +473,11 @@ function loadFans() {
 }
 
 function loadLastMessage(fanName) {
+  const safeFanName = fanName.replace(/[^a-zA-Z0-9]/g, '_');
   db.ref(`chats/${fanName}`).orderByChild('timestamp').limitToLast(1).on('child_added', snapshot => {
     const msg = snapshot.val();
-    const lastMsgEl = document.getElementById(`last-msg-${fanName}`);
-    const timeEl = document.getElementById(`time-${fanName}`);
+    const lastMsgEl = document.getElementById(`last-msg-${safeFanName}`);
+    const timeEl = document.getElementById(`time-${safeFanName}`);
     lastMsgEl.textContent = msg.sender === 'admin' ? `You: ${msg.text.slice(0,20)}${msg.text.length > 20 ? '...' : ''}` : msg.text.slice(0,20) + (msg.text.length > 20 ? '...' : '');
     timeEl.textContent = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   });
@@ -485,16 +488,17 @@ function loadLastMessage(fanName) {
       const val = msg.val();
       if (val?.sender !== 'admin' && val?.status !== 'seen') hasUnread = true;
     });
-    document.getElementById(`dot-${fanName}`).style.display = hasUnread ? 'block' : 'none';
+    document.getElementById(`dot-${safeFanName}`).style.display = hasUnread ? 'block' : 'none';
   });
 }
 
 function loadFanChat(fanName) {
   selectedFan = fanName;
-  document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
-  document.querySelector(`.user-item:nth-child(${Object.keys(usersData).indexOf(fanName)+2})`).classList.add('active');
+  const safeFanName = fanName.replace(/[^a-zA-Z0-9]/g, '_');
 
-  document.getElementById('dot-'+fanName).style.display = 'none';
+  document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
+  const userElement = document.getElementById(`user-${safeFanName}`);
+  if (userElement) userElement.classList.add('active');
 
   chatUserInfo.innerHTML = `<div class="chat-user-avatar"><div class="chat-user-avatar-inner"><span>${fanName.charAt(0)}</span></div></div><div class="chat-user-name">${fanName}</div>`;
   chatArea.classList.add('active');
@@ -503,6 +507,7 @@ function loadFanChat(fanName) {
   chatMessages.innerHTML = '';
   if (activeChatRef) activeChatRef.off();
   activeChatRef = db.ref(`chats/${fanName}`);
+
   activeChatRef.orderByChild('timestamp').on('child_added', snapshot => {
     const data = snapshot.val();
     if (snapshot.key === 'typingStatus') return;
