@@ -975,6 +975,9 @@ function loadFanChat(fanName) {
   });
   document.getElementById(`user-${fanName}`).classList.add('active');
   
+  // Hide the red dot immediately when chat is opened
+  document.getElementById(`dot-${fanName}`).style.display = 'none';
+  
   // Set chat header
   chatUserInfo.innerHTML = `
     <div class="chat-user-avatar">
@@ -1016,22 +1019,36 @@ function loadFanChat(fanName) {
     }
   });
   
-  // Mark messages as seen
+  // Mark messages as seen - this is the fixed version
   db.ref(`chats/${fanName}`).once('value', snap => {
     const updates = {};
+    let hasUpdates = false;
+    
     snap.forEach(child => {
       const key = child.key;
-      if (key !== 'typingStatus' && child.val().sender !== 'admin' && child.val().status !== 'seen') {
+      const val = child.val();
+      
+      if (key !== 'typingStatus' && val.sender !== 'admin' && val.status !== 'seen') {
         updates[`${key}/status`] = 'seen';
+        hasUpdates = true;
       }
     });
     
-    if (Object.keys(updates).length > 0) {
-      db.ref(`chats/${fanName}`).update(updates);
+    if (hasUpdates) {
+      db.ref(`chats/${fanName}`).update(updates)
+        .then(() => {
+          console.log('All messages marked as seen');
+          // Force refresh the dot status
+          db.ref(`chats/${fanName}`).once('value', () => {
+            document.getElementById(`dot-${fanName}`).style.display = 'none';
+          });
+        })
+        .catch(error => {
+          console.error('Error updating message status:', error);
+        });
     }
   });
 }
-
 // Display a message in the chat
 function displayMessage(text, sender, timestamp, status, messageId) {
   const isAdmin = sender === 'admin';
