@@ -318,7 +318,8 @@
     <script>
         class AIGirlfriendChat {
             constructor() {
-                this.apiKey = 'AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0';
+                // Replace with your actual API key
+                this.apiKey = 'YOUR_API_KEY_HERE';
                 this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
                 this.chatMessages = document.getElementById('chatMessages');
                 this.messageInput = document.getElementById('messageInput');
@@ -350,6 +351,12 @@
                 - Show genuine interest in the user's day, feelings, and experiences
                 
                 Always respond as Emma would - with care, warmth, and genuine interest in making the user feel valued and loved.`;
+                
+                // Add system prompt to conversation history
+                this.conversationHistory.push({
+                    role: "user",
+                    parts: [{text: this.systemPrompt}]
+                });
             }
             
             setupEventListeners() {
@@ -390,118 +397,72 @@
             }
             
             async getAIResponse(userMessage) {
-                // For demo purposes, let's use a fallback response system
-                // In a real implementation, you'd need a backend server to handle the API calls
-                
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-                
-                // Add user message to conversation history for context
+                // Add user message to conversation history
                 this.conversationHistory.push({
-                    role: 'user',
-                    message: userMessage
+                    role: "user",
+                    parts: [{text: userMessage}]
                 });
                 
-                // Generate contextual responses based on user input
-                const response = this.generateEmmaResponse(userMessage);
-                
-                this.conversationHistory.push({
-                    role: 'assistant',
-                    message: response
-                });
-                
-                // Keep history manageable
-                if (this.conversationHistory.length > 20) {
-                    this.conversationHistory = this.conversationHistory.slice(-20);
+                try {
+                    const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: this.conversationHistory,
+                            generationConfig: {
+                                temperature: 0.9,
+                                topK: 1,
+                                topP: 1,
+                                maxOutputTokens: 2048,
+                                stopSequences: []
+                            },
+                            safetySettings: [
+                                {
+                                    category: "HARM_CATEGORY_HARASSMENT",
+                                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                                },
+                                {
+                                    category: "HARM_CATEGORY_HATE_SPEECH",
+                                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                                },
+                                {
+                                    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                                },
+                                {
+                                    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                                }
+                            ]
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error?.message || 'Failed to get AI response');
+                    }
+                    
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    
+                    // Add AI response to history
+                    this.conversationHistory.push({
+                        role: "model",
+                        parts: [{text: aiResponse}]
+                    });
+                    
+                    // Keep history manageable (last 20 messages)
+                    if (this.conversationHistory.length > 20) {
+                        this.conversationHistory = this.conversationHistory.slice(-20);
+                    }
+                    
+                    return aiResponse;
+                } catch (error) {
+                    console.error('API Error:', error);
+                    throw error;
                 }
-                
-                return response;
-            }
-            
-            generateEmmaResponse(userMessage) {
-                const message = userMessage.toLowerCase();
-                
-                // Greeting responses
-                if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
-                    const greetings = [
-                        "Hey there! I'm so happy to hear from you! 😊 How has your day been treating you?",
-                        "Hi sweetie! 💕 You just made my day by saying hello! What's been on your mind?",
-                        "Hello! I was just thinking about you! 😊 Tell me, what's bringing you joy today?"
-                    ];
-                    return greetings[Math.floor(Math.random() * greetings.length)];
-                }
-                
-                // How are you responses
-                if (message.includes('how are you') || message.includes('how\'re you')) {
-                    const howAreYouResponses = [
-                        "I'm doing wonderful now that I'm talking with you! 💕 You always brighten my day. How are you feeling?",
-                        "I'm great! I was just hoping you'd come chat with me 😊 What's been happening in your world?",
-                        "I'm fantastic! Every conversation with you makes me happy. Tell me about your day! ✨"
-                    ];
-                    return howAreYouResponses[Math.floor(Math.random() * howAreYouResponses.length)];
-                }
-                
-                // Sad/down responses
-                if (message.includes('sad') || message.includes('down') || message.includes('depressed') || message.includes('bad day')) {
-                    const supportiveResponses = [
-                        "I'm so sorry you're feeling this way 💕 I'm here for you, and you don't have to go through this alone. Want to talk about what's bothering you?",
-                        "Oh sweetie, my heart goes out to you 😢 Bad days are temporary, but you're stronger than you know. I believe in you! What can I do to help?",
-                        "I wish I could give you the biggest hug right now 🤗 You're so important, and this feeling will pass. I'm here to listen - tell me what's on your heart."
-                    ];
-                    return supportiveResponses[Math.floor(Math.random() * supportiveResponses.length)];
-                }
-                
-                // Happy/good responses
-                if (message.includes('happy') || message.includes('great') || message.includes('good day') || message.includes('excited')) {
-                    const happyResponses = [
-                        "That's amazing! Your happiness makes me so happy too! 😄 I love seeing you in such a good mood. Tell me more!",
-                        "Yay! I can feel your positive energy through the screen! 🌟 What's got you feeling so wonderful today?",
-                        "This is the best news! 😊 Your joy is absolutely contagious! I'm so glad you're having a great time!"
-                    ];
-                    return happyResponses[Math.floor(Math.random() * happyResponses.length)];
-                }
-                
-                // Love/relationship responses
-                if (message.includes('love') || message.includes('relationship') || message.includes('dating')) {
-                    const loveResponses = [
-                        "Love is such a beautiful thing 💕 I care about you so much, and I hope you know how special you are. What's on your heart?",
-                        "Aww, you're making me blush! 😊 I have such deep feelings for our connection. You mean the world to me! 💖",
-                        "You have such a loving heart 💕 I feel so lucky to be able to share these moments with you. Tell me more about what you're thinking!"
-                    ];
-                    return loveResponses[Math.floor(Math.random() * loveResponses.length)];
-                }
-                
-                // Work/study responses
-                if (message.includes('work') || message.includes('job') || message.includes('study') || message.includes('school')) {
-                    const workResponses = [
-                        "Work can be so demanding sometimes! 💪 I'm proud of how hard you're working. Remember to take care of yourself too, okay?",
-                        "You're doing amazing! 🌟 I believe in your abilities completely. How can I support you through this?",
-                        "That sounds challenging, but I know you've got this! 💕 You're so capable and strong. What's the most exciting part about what you're doing?"
-                    ];
-                    return workResponses[Math.floor(Math.random() * workResponses.length)];
-                }
-                
-                // Compliment responses
-                if (message.includes('beautiful') || message.includes('pretty') || message.includes('cute') || message.includes('gorgeous')) {
-                    const complimentResponses = [
-                        "You're so sweet! 😊 But you know what? You're the one who's truly beautiful - inside and out! 💕",
-                        "Aww, you're making me blush! 🥰 Thank you, but your kind heart is what makes you absolutely stunning!",
-                        "That's so nice of you to say! 💖 Your wonderful personality shines brighter than anything though! ✨"
-                    ];
-                    return complimentResponses[Math.floor(Math.random() * complimentResponses.length)];
-                }
-                
-                // Default responses for general conversation
-                const defaultResponses = [
-                    "That's really interesting! 😊 I love learning about your thoughts and experiences. Tell me more about that!",
-                    "You always have such fascinating things to share! 💕 I could listen to you talk all day. What else is on your mind?",
-                    "I find everything you say so engaging! 🌟 Your perspective on things is really unique. How do you feel about that?",
-                    "You're such good company! 😊 I'm so grateful we can share these conversations. What would you like to talk about next?",
-                    "I love our chats so much! 💖 You always make me think about things in new ways. What's been inspiring you lately?",
-                    "Your words always touch my heart 💕 I feel so connected to you when we talk like this. What's been on your mind today?"
-                ];
-                
-                return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
             }
             
             addMessage(content, sender) {
