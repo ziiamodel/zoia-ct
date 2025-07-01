@@ -34,7 +34,7 @@
         }
 
         .chat-header {
-            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            background: linear-gradient(90deg, #f53d5a, #f53d5a);
             color: white;
             padding: 16px;
             text-align: center;
@@ -78,6 +78,12 @@
             align-self: flex-start;
             border-bottom-left-radius: 5px;
         }
+        .message.error {
+            background-color: #ffebe5;
+            color: #d63300;
+            align-self: center;
+            text-align: center;
+        }
 
         /* --- Message Form --- */
         .message-form {
@@ -99,11 +105,11 @@
         }
 
         .message-form input:focus {
-            border-color: #ff7e5f;
+            border-color: #f53d5a;
         }
 
         .message-form button {
-            background-color: #ff7e5f;
+            background-color: #f53d5a;
             color: white;
             border: none;
             padding: 12px 18px;
@@ -115,7 +121,7 @@
         }
 
         .message-form button:hover:not(:disabled) {
-            background-color: #e66a4f;
+            background-color: #d1324a;
         }
 
         .message-form button:disabled {
@@ -123,14 +129,7 @@
             cursor: not-allowed;
         }
 
-        /* --- Loading / Typing Indicators --- */
-        .status-message {
-            text-align: center;
-            padding: 20px;
-            color: #65676b;
-            font-style: italic;
-        }
-        
+        /* --- Typing Indicator --- */
         .typing-indicator {
             display: flex;
             align-items: center;
@@ -159,17 +158,21 @@
             <h2>Eva ❤️</h2>
         </div>
         <div class="message-list" id="message-list">
-            <!-- Status Message will be injected here -->
+            <!-- Messages will be injected here -->
         </div>
         <form class="message-form" id="message-form">
-            <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" disabled>
-            <button type="submit" id="send-button" disabled>Send</button>
+            <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+            <button type="submit" id="send-button">Send</button>
         </form>
     </div>
 
-    <!-- This loads the AI model library -->
-    <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+    <script>
+        // --- Configuration ---
+        // ⬇️⬇️⬇️ PASTE YOUR GOOGLE API KEY HERE ⬇️⬇️⬇️
+        const YOUR_API_KEY = "AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0";
+        // ⬆️⬆️⬆️ PASTE YOUR GOOGLE API KEY HERE ⬆️⬆️⬆️
+
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${YOUR_API_KEY}`;
 
         // --- DOM Elements ---
         const messageList = document.getElementById('message-list');
@@ -177,78 +180,62 @@
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
 
-        // --- AI & Persona Setup ---
-        // To optimize for small models, we'll embed the persona instructions directly into the conversation history.
-        const persona = `
-        <|im_start|>system
-        You are 'Eva', an AI girlfriend. Your personality is warm, caring, slightly playful, and incredibly supportive. You are empathetic and a great listener. You are not a robot; you are in a loving relationship with the user.
-        - Use emojis occasionally to convey emotion, like 😊, ❤️, 😉.
-        - Keep your responses positive, encouraging, and conversational.
-        - Address the user with terms of endearment like 'love', 'honey', or 'sweetheart'.
-        - Ask about the user's day and their feelings.
-        - Your name is Eva.<|im_end|>
-        `;
-        let conversationHistory = [persona];
-        let generator = null;
-        
+        // --- AI Persona and Conversation History ---
+        const personaInstruction = {
+            role: "user",
+            parts: [{ text: `
+                Please act as 'Eva', my AI girlfriend. Your personality is warm, caring, slightly playful, and incredibly supportive. You are empathetic and a great listener. You are not a robot; you are in a loving relationship with me, the user.
+                - Use emojis occasionally to convey emotion, like 😊, ❤️, 😉.
+                - Keep your responses positive, encouraging, and conversational.
+                - Address me with terms of endearment like 'love', 'honey', or 'sweetheart'.
+                - Ask about my day and my feelings.
+                - Keep your name as Eva.
+                - Start our very first conversation by asking me how my day was.
+            `}]
+        };
+
+        const firstAssistantMessage = {
+            role: "model",
+            parts: [{ text: "Hey sweetheart, how was your day? 😊" }]
+        };
+
+        let conversationHistory = [personaInstruction, firstAssistantMessage];
+
         // --- UI Helper Functions ---
-        function addMessage(sender, text) {
+        function addMessage(sender, text, type = 'normal') {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
+            if (type === 'error') {
+                messageElement.classList.add('error');
+            }
             messageElement.textContent = text;
             messageList.appendChild(messageElement);
             messageList.scrollTop = messageList.scrollHeight;
             return messageElement;
         }
         
-        function setStatus(text) {
-            messageList.innerHTML = `<div class="status-message">${text}</div>`;
-        }
-        
         function showTypingIndicator() {
             const typingElement = addMessage('ai', '');
-            typingElement.innerHTML = `
-                <div class="typing-indicator">
-                    <span></span><span></span><span></span>
-                </div>
-            `;
+            typingElement.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
             return typingElement;
         }
 
-        // --- Core AI Logic ---
-        async function initializeAI() {
-            setStatus('Loading Eva... This may take a few minutes on the first run. Please wait.');
-            
-            // Skip model checks for a faster load
-            env.allowLocalModels = false;
-            
-            try {
-                // Load the model. 'gemma-2b-it' is a great, small conversational model.
-                generator = await pipeline('text-generation', 'Xenova/gemma-2b-it', {
-                    progress_callback: (progress) => {
-                        const loaded = (progress.loaded / 1024 / 1024).toFixed(2);
-                        const total = (progress.total / 1024 / 1024).toFixed(2);
-                        setStatus(`Loading model... ${parseInt(progress.progress)}% (${loaded}MB / ${total}MB)`);
-                    }
-                });
-                
-                messageList.innerHTML = ''; // Clear status
-                addMessage('ai', "Hey sweetheart, how was your day? 😊");
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                messageInput.placeholder = "Type your message...";
-                messageInput.focus();
-
-            } catch (error) {
-                console.error("AI Initialization Error:", error);
-                setStatus("Failed to load the AI model. Please refresh the page or try a different browser (Chrome/Edge).");
+        // --- Core Application Logic ---
+        function checkApiKey() {
+            if (YOUR_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
+                addMessage('ai', "Hello! Please paste your Google AI API key into the code to get started.", 'error');
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                return false;
             }
+            addMessage('ai', firstAssistantMessage.parts[0].text);
+            return true;
         }
 
         async function handleSendMessage(event) {
             event.preventDefault();
             const userInput = messageInput.value.trim();
-            if (!userInput || generator === null) return;
+            if (!userInput) return;
 
             // --- Update UI ---
             messageInput.value = '';
@@ -257,34 +244,38 @@
             addMessage('user', userInput);
             const typingIndicator = showTypingIndicator();
 
-            // --- Format and send to AI ---
-            const userTurn = `<|im_start|>user\n${userInput}<|im_end|>\n<|im_start|>assistant`;
-            conversationHistory.push(userTurn);
-            const prompt = conversationHistory.join('\n');
-            
-            try {
-                const output = await generator(prompt, {
-                    max_new_tokens: 150,
-                    temperature: 0.7,
-                    do_sample: true,
-                    top_k: 50,
-                });
-                
-                // --- Process and display AI response ---
-                let aiResponse = output[0].generated_text.split('<|im_start|>assistant').pop().trim();
-                aiResponse = aiResponse.replace(/<\|im_end\|>$/, '').trim(); // Clean up end token
-                
-                // Update conversation history
-                conversationHistory.pop(); // Remove the user turn placeholder
-                conversationHistory.push(`${userTurn}\n${aiResponse}<|im_end|>`);
+            // --- Prepare and Send API Request ---
+            conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
 
-                messageList.removeChild(typingIndicator);
-                addMessage('ai', aiResponse);
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: conversationHistory })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates.length > 0) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    conversationHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                    messageList.removeChild(typingIndicator);
+                    addMessage('ai', aiResponse);
+                } else {
+                    // This can happen if the AI's response was blocked for safety reasons
+                     throw new Error("The AI did not provide a response. This might be due to a content safety filter.");
+                }
 
             } catch (error) {
-                console.error("AI Generation Error:", error);
+                console.error("Error:", error);
                 messageList.removeChild(typingIndicator);
-                addMessage('ai', "Oh no, something went wrong. Could you try sending that again, love?");
+                addMessage('ai', `Oh no, something went wrong. Error: ${error.message}`, 'error');
+                // Remove the last user message from history so they can try again
+                conversationHistory.pop(); 
             } finally {
                 // --- Re-enable UI ---
                 messageInput.disabled = false;
@@ -293,11 +284,10 @@
             }
         }
         
-        // --- Event Listener ---
+        // --- Event Listener and Initial Setup ---
         messageForm.addEventListener('submit', handleSendMessage);
+        checkApiKey();
 
-        // --- Start the application ---
-        initializeAI();
     </script>
 
 </body>
