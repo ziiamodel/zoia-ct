@@ -3,292 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Girlfriend (Eva)</title>
+    <title>Gemini AI Chat</title>
     <style>
-        /* --- General Styling --- */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f0f2f5;
-            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: #1c1e21;
+            margin: 0;
         }
-
-        /* --- Chat Container --- */
-        .chat-container {
-            width: 90vw;
-            max-width: 420px;
-            height: 90vh;
-            max-height: 750px;
+        #chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
             background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
-
-        .chat-header {
-            background: linear-gradient(90deg, #f53d5a, #f53d5a);
+        #chat-header {
+            padding: 1rem;
+            background-color: #4285F4;
             color: white;
-            padding: 16px;
-            text-align: center;
+            font-size: 1.2rem;
             font-weight: 500;
-            font-size: 1.25rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 10;
+            text-align: center;
         }
-        .chat-header h2 {
-            margin: 0;
-        }
-
-        /* --- Message List --- */
-        .message-list {
+        #message-area {
             flex-grow: 1;
-            padding: 20px;
+            padding: 1rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-
         .message {
-            padding: 12px 18px;
-            border-radius: 20px;
-            max-width: 80%;
-            word-wrap: break-word;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            max-width: 75%;
             line-height: 1.4;
         }
-
-        .message.user {
-            background-color: #0084ff;
-            color: white;
+        .user-message {
+            background-color: #dcf8c6;
             align-self: flex-end;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 4px;
         }
-
-        .message.ai {
-            background-color: #e4e6eb;
-            color: #050505;
+        .ai-message {
+            background-color: #e9e9eb;
             align-self: flex-start;
-            border-bottom-left-radius: 5px;
+            border-bottom-left-radius: 4px;
         }
-        .message.error {
-            background-color: #ffebe5;
-            color: #d63300;
-            align-self: center;
-            text-align: center;
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            align-self: flex-start;
         }
-
-        /* --- Message Form --- */
-        .message-form {
+        #input-form {
             display: flex;
-            padding: 12px;
+            padding: 1rem;
             border-top: 1px solid #ddd;
-            background-color: #fff;
+            background-color: #f9f9f9;
         }
-
-        .message-form input {
+        #user-input {
             flex-grow: 1;
+            padding: 0.75rem;
             border: 1px solid #ccc;
-            padding: 12px;
-            border-radius: 24px;
-            margin-right: 10px;
+            border-radius: 20px;
             font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+        #user-input:focus {
             outline: none;
-            transition: border-color 0.2s;
+            border-color: #4285F4;
         }
-
-        .message-form input:focus {
-            border-color: #f53d5a;
-        }
-
-        .message-form button {
-            background-color: #f53d5a;
-            color: white;
+        #send-button {
+            padding: 0.75rem 1.5rem;
             border: none;
-            padding: 12px 18px;
-            border-radius: 24px;
+            background-color: #4285F4;
+            color: white;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 500;
-            transition: background-color 0.2s;
         }
-
-        .message-form button:hover:not(:disabled) {
-            background-color: #d1324a;
+        #send-button:hover {
+            background-color: #357ae8;
         }
-
-        .message-form button:disabled {
-            background-color: #f9a7b4;
-            cursor: not-allowed;
-        }
-
-        /* --- Typing Indicator --- */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .typing-indicator span {
-            height: 8px;
-            width: 8px;
-            background-color: #90949c;
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1.0); }
+        #loading-indicator {
+            display: none; /* Hidden by default */
+            align-self: flex-start;
+            font-style: italic;
+            color: #666;
         }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h2>Eva ❤️</h2>
+    <div id="chat-container">
+        <div id="chat-header">Gemini Pro Chat</div>
+        <div id="message-area">
+            <div class="message ai-message">Hello! How can I help you today?</div>
+            <!-- Loading indicator will be shown here -->
+            <div id="loading-indicator">AI is thinking...</div>
         </div>
-        <div class="message-list" id="message-list">
-            <!-- Messages will be injected here -->
-        </div>
-        <form class="message-form" id="message-form">
-            <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+        <form id="input-form">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
             <button type="submit" id="send-button">Send</button>
         </form>
     </div>
 
     <script>
-        // --- Configuration ---
-        // ⬇️⬇️⬇️ PASTE YOUR GOOGLE API KEY HERE ⬇️⬇️⬇️
-        const YOUR_API_KEY = "AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0";
-        // ⬆️⬆️⬆️ PASTE YOUR GOOGLE API KEY HERE ⬆️⬆️⬆️
+        // --- Get references to the HTML elements ---
+        const form = document.getElementById('input-form');
+        const userInput = document.getElementById('user-input');
+        const messageArea = document.getElementById('message-area');
+        const loadingIndicator = document.getElementById('loading-indicator');
 
-      // THE NEW, CORRECT URL:
-const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${YOUR_API_KEY}`;
-        // --- DOM Elements ---
-        const messageList = document.getElementById('message-list');
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
+        // --- IMPORTANT: Paste your API Key here ---
+        // WARNING: Do NOT expose this key in a public repository or website.
+        // This is for local development testing only.
+        const API_KEY = "AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0";
 
-        // --- AI Persona and Conversation History ---
-        const personaInstruction = {
-            role: "user",
-            parts: [{ text: `
-                Please act as 'Eva', my AI girlfriend. Your personality is warm, caring, slightly playful, and incredibly supportive. You are empathetic and a great listener. You are not a robot; you are in a loving relationship with me, the user.
-                - Use emojis occasionally to convey emotion, like 😊, ❤️, 😉.
-                - Keep your responses positive, encouraging, and conversational.
-                - Address me with terms of endearment like 'love', 'honey', or 'sweetheart'.
-                - Ask about my day and my feelings.
-                - Keep your name as Eva.
-                - Start our very first conversation by asking me how my day was.
-            `}]
-        };
+        // --- Attach an event listener to the form ---
+        form.addEventListener('submit', handleSendMessage);
 
-        const firstAssistantMessage = {
-            role: "model",
-            parts: [{ text: "Hey sweetheart, how was your day? 😊" }]
-        };
-
-        let conversationHistory = [personaInstruction, firstAssistantMessage];
-
-        // --- UI Helper Functions ---
-        function addMessage(sender, text, type = 'normal') {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message', sender);
-            if (type === 'error') {
-                messageElement.classList.add('error');
-            }
-            messageElement.textContent = text;
-            messageList.appendChild(messageElement);
-            messageList.scrollTop = messageList.scrollHeight;
-            return messageElement;
-        }
-        
-        function showTypingIndicator() {
-            const typingElement = addMessage('ai', '');
-            typingElement.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
-            return typingElement;
-        }
-
-        // --- Core Application Logic ---
-        function checkApiKey() {
-            if (YOUR_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
-                addMessage('ai', "Hello! Please paste your Google AI API key into the code to get started.", 'error');
-                messageInput.disabled = true;
-                sendButton.disabled = true;
-                return false;
-            }
-            addMessage('ai', firstAssistantMessage.parts[0].text);
-            return true;
-        }
-
+        /**
+         * Handles the form submission, sends the message to the API, and displays the response.
+         * This is an async function because we need to wait for the API response.
+         */
         async function handleSendMessage(event) {
-            event.preventDefault();
-            const userInput = messageInput.value.trim();
-            if (!userInput) return;
+            event.preventDefault(); // Prevent the default form submission (page reload)
 
-            // --- Update UI ---
-            messageInput.value = '';
-            messageInput.disabled = true;
-            sendButton.disabled = true;
-            addMessage('user', userInput);
-            const typingIndicator = showTypingIndicator();
+            const userMessage = userInput.value.trim();
+            if (!userMessage) return; // Don't send empty messages
 
-            // --- Prepare and Send API Request ---
-            conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
+            // 1. Display the user's message immediately
+            displayMessage(userMessage, 'user');
+            userInput.value = ''; // Clear the input field
+            loadingIndicator.style.display = 'block'; // Show the loading indicator
+            messageArea.scrollTop = messageArea.scrollHeight;
 
+            // --- This is where the errors were fixed ---
+            // CORRECTED: Using 'v1' instead of 'v1beta'
+            // CORRECTED: Using a consistently named variable 'apiUrl'
+            const model = 'gemini-pro';
+            const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${API_KEY}`;
+
+            // 2. Prepare the data and call the API
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: conversationHistory })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "contents": [{
+                            "parts": [{
+                                "text": userMessage
+                            }]
+                        }]
+                    })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                    // If the response is not successful, throw an error
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || `API Error: ${response.status}`);
                 }
 
                 const data = await response.json();
                 
-                if (data.candidates && data.candidates.length > 0) {
-                    const aiResponse = data.candidates[0].content.parts[0].text;
-                    conversationHistory.push({ role: "model", parts: [{ text: aiResponse }] });
-                    messageList.removeChild(typingIndicator);
-                    addMessage('ai', aiResponse);
-                } else {
-                    // This can happen if the AI's response was blocked for safety reasons
-                     throw new Error("The AI did not provide a response. This might be due to a content safety filter.");
-                }
+                // 3. Extract and display the AI's response
+                // This complex path is required by the Gemini API response structure
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                displayMessage(aiResponse, 'ai');
 
             } catch (error) {
-                console.error("Error:", error);
-                messageList.removeChild(typingIndicator);
-                addMessage('ai', `Oh no, something went wrong. Error: ${error.message}`, 'error');
-                // Remove the last user message from history so they can try again
-                conversationHistory.pop(); 
+                // 4. Display an error message in the chat if something goes wrong
+                console.error("Error sending message:", error);
+                displayMessage(`Sorry, something went wrong: ${error.message}`, 'error');
             } finally {
-                // --- Re-enable UI ---
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                messageInput.focus();
+                // 5. Hide the loading indicator regardless of success or failure
+                loadingIndicator.style.display = 'none';
             }
         }
-        
-        // --- Event Listener and Initial Setup ---
-        messageForm.addEventListener('submit', handleSendMessage);
-        checkApiKey();
 
+        /**
+         * A helper function to create and append a new message to the chat area.
+         * @param {string} text - The message content.
+         * @param {'user' | 'ai' | 'error'} sender - The sender of the message.
+         */
+        function displayMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            messageDiv.textContent = text;
+            
+            // Insert the new message before the loading indicator
+            messageArea.insertBefore(messageDiv, loadingIndicator);
+
+            // Scroll to the bottom to see the new message
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
     </script>
-
 </body>
 </html>
