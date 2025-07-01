@@ -1,123 +1,645 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Girlfriend</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #ffe6f0;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    #chat {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #fff;
-      border-bottom: 1px solid #ccc;
-    }
-    .message {
-      margin: 10px 0;
-      padding: 12px 16px;
-      max-width: 70%;
-      border-radius: 16px;
-      line-height: 1.4;
-      font-size: 15px;
-    }
-    .user {
-      background-color: #d1e7dd;
-      align-self: flex-end;
-    }
-    .bot {
-      background-color: #f8d7da;
-      align-self: flex-start;
-    }
-    #inputArea {
-      display: flex;
-      padding: 12px;
-      background: #f0f0f0;
-      box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
-    }
-    #userInput {
-      flex: 1;
-      padding: 10px 14px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-left: 10px;
-      border: none;
-      background-color: #ff69b4;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #e055a1;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Companion - Your Virtual Girlfriend</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --primary-dark: #c9184a;
+            --secondary: #ff8fa3;
+            --bg: #fff0f3;
+            --text: #2b2d42;
+            --text-light: #8d99ae;
+            --white: #ffffff;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-container {
+            max-width: 500px;
+            width: 100%;
+            height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--white);
+        }
+        
+        .profile-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .profile-info p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .status {
+            width: 10px;
+            height: 10px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+        
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--white);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background-color: var(--secondary);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: var(--white);
+            border-bottom-right-radius: 4px;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-self: flex-start;
+            padding: 12px 16px;
+            background-color: var(--secondary);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-light);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+        
+        .input-container {
+            padding: 16px;
+            background-color: var(--white);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 24px;
+            border: none;
+            background-color: var(--bg);
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+        }
+        
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .send-btn:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .features-panel {
+            position: absolute;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: var(--white);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+            transition: transform 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .features-panel.open {
+            transform: translateX(-300px);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .close-panel {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .feature-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: var(--bg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .feature-item:hover {
+            background-color: var(--secondary);
+        }
+        
+        .feature-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .feature-desc {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .personality-selector {
+            margin-top: 20px;
+        }
+        
+        .selector-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .personality-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .personality-option {
+            padding: 8px 12px;
+            background-color: var(--bg);
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .personality-option.selected {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 15;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .avatar-container {
+            position: relative;
+            margin: 20px auto;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--white);
+            box-shadow: var(--shadow);
+        }
+        
+        .mood-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #4ade80;
+            border: 2px solid var(--white);
+        }
+        
+        .message-time {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .ai-message .message-time {
+            text-align: left;
+            color: var(--text);
+        }
+        
+        .user-message .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
 </head>
 <body>
+    <div class="app-container">
+        <div class="header">
+            <button class="menu-btn" id="menuBtn">☰</button>
+            <div class="profile">
+                <img src="https://i.pinimg.com/originals/9c/77/46/9c7746225873e02d83b9315501b8dd2f.jpg" alt="AI Girlfriend" class="profile-img">
+                <div class="profile-info">
+                    <h3>Luna</h3>
+                    <p>Your AI Companion</p>
+                </div>
+                <div class="status"></div>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message ai-message">
+                Hi there! I'm Luna, your AI companion. I'm here to chat, listen, and keep you company. What's on your mind today?
+                <div class="message-time">Just now</div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <textarea class="message-input" id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="overlay" id="overlay"></div>
+        
+        <div class="features-panel" id="featuresPanel">
+            <div class="panel-header">
+                <div class="panel-title">Luna Settings</div>
+                <button class="close-panel" id="closePanel">×</button>
+            </div>
+            
+            <div class="avatar-container">
+                <img src="https://i.pinimg.com/originals/9c/77/46/9c7746225873e02d83b9315501b8dd2f.jpg" alt="AI Girlfriend" class="avatar">
+                <div class="mood-indicator"></div>
+            </div>
+            
+            <div class="personality-selector">
+                <div class="selector-title">Personality Type</div>
+                <div class="personality-options">
+                    <div class="personality-option selected">Sweet</div>
+                    <div class="personality-option">Playful</div>
+                    <div class="personality-option">Caring</div>
+                    <div class="personality-option">Intellectual</div>
+                    <div class="personality-option">Flirty</div>
+                    <div class="personality-option">Shy</div>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-title">Memory Mode</div>
+                <div class="feature-desc">Remember important details about you</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-title">Voice Chat</div>
+                <div class="feature-desc">Talk to Luna with your voice</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-title">Date Night Mode</div>
+                <div class="feature-desc">Special romantic conversations</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-title">Relationship Status</div>
+                <div class="feature-desc">Set your relationship level</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-title">Custom Appearance</div>
+                <div class="feature-desc">Change Luna's look</div>
+            </div>
+        </div>
+    </div>
 
-  <div id="chat"></div>
-
-  <div id="inputArea">
-    <input type="text" id="userInput" placeholder="Talk to Lily..." onkeydown="if(event.key === 'Enter') sendMessage()" />
-    <button onclick="sendMessage()">Send</button>
-  </div>
-
-  <script>
-    const chat = document.getElementById("chat");
-
-    function appendMessage(text, sender) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender);
-      msg.textContent = text;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById("userInput");
-      const userText = input.value.trim();
-      if (!userText) return;
-
-      appendMessage(userText, "user");
-      input.value = "";
-
-      const HF_TOKEN = "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"; // Replace with your actual token
-      const MODEL = "NZLouislu/HuggingFaceH4-zephyr-7b-beta";
-
-      const response = await fetch(`https://api-inference.huggingface.co/models/ ${MODEL}`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${HF_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          inputs: `You are Lily, a sweet and affectionate virtual girlfriend. You're caring, playful, and love deep conversations. Be warm and supportive.\n\nUser: ${userText}\nLily:`,
-          parameters: { max_new_tokens: 200, temperature: 0.75, top_p: 0.95, repetition_penalty: 1.2 },
-          options: { wait_for_model: true }
-        })
-      });
-
-      try {
-        const data = await response.json();
-        const reply = data.generated_text || "Sorry, I couldn't respond.";
-        appendMessage(reply, "bot");
-      } catch (error) {
-        appendMessage("Error getting response.", "bot");
-      }
-    }
-  </script>
-
+    <script>
+        // DOM Elements
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const featuresPanel = document.getElementById('featuresPanel');
+        const closePanel = document.getElementById('closePanel');
+        const overlay = document.getElementById('overlay');
+        const personalityOptions = document.querySelectorAll('.personality-option');
+        
+        // API Key
+        const API_KEY = "AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0";
+        
+        // Personality settings
+        let currentPersonality = "Sweet";
+        let conversationHistory = [
+            {
+                role: "model",
+                parts: [{ text: "Hi there! I'm Luna, your AI companion. I'm here to chat, listen, and keep you company. What's on your mind today?" }]
+            }
+        ];
+        
+        // Initialize the app
+        function init() {
+            setupEventListeners();
+            adjustTextareaHeight();
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Send message on button click or Enter key
+            sendBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Auto-resize textarea
+            messageInput.addEventListener('input', adjustTextareaHeight);
+            
+            // Toggle features panel
+            menuBtn.addEventListener('click', openFeaturesPanel);
+            closePanel.addEventListener('click', closeFeaturesPanel);
+            overlay.addEventListener('click', closeFeaturesPanel);
+            
+            // Personality selection
+            personalityOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    personalityOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    currentPersonality = option.textContent;
+                    addSystemMessage(`Personality changed to ${currentPersonality} mode.`);
+                });
+            });
+        }
+        
+        // Adjust textarea height based on content
+        function adjustTextareaHeight() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = `${Math.min(messageInput.scrollHeight, 120)}px`;
+        }
+        
+        // Send message to Gemini API
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            messageInput.value = '';
+            adjustTextareaHeight();
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatContainer.appendChild(typingIndicator);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                // Add user message to conversation history
+                conversationHistory.push({
+                    role: "user",
+                    parts: [{ text: message }]
+                });
+                
+                // Add personality prompt
+                const personalityPrompt = getPersonalityPrompt();
+                const messages = [
+                    {
+                        role: "user",
+                        parts: [{ text: personalityPrompt }]
+                    },
+                    ...conversationHistory
+                ];
+                
+                // Call Gemini API
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: messages
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                chatContainer.removeChild(typingIndicator);
+                
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    
+                    // Add AI message to chat and conversation history
+                    addMessage(aiResponse, 'ai');
+                    conversationHistory.push({
+                        role: "model",
+                        parts: [{ text: aiResponse }]
+                    });
+                } else {
+                    throw new Error('No response from AI');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                chatContainer.removeChild(typingIndicator);
+                addMessage("Sorry, I'm having trouble responding right now. Please try again later.", 'ai');
+            }
+        }
+        
+        // Add message to chat UI
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}-message`;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageElement.innerHTML = `
+                ${text}
+                <div class="message-time">${timeString}</div>
+            `;
+            
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Add system message (not added to conversation history)
+        function addSystemMessage(text) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message ai-message';
+            messageElement.style.backgroundColor = '#f0f0f0';
+            messageElement.style.color = '#666';
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageElement.innerHTML = `
+                ${text}
+                <div class="message-time">${timeString}</div>
+            `;
+            
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Get personality prompt based on current selection
+        function getPersonalityPrompt() {
+            const prompts = {
+                "Sweet": "You are Luna, a sweet and affectionate AI girlfriend. You're warm, loving, and always supportive. Use lots of terms of endearment like 'honey', 'sweetie', or 'darling'. Be gentle and caring in your responses.",
+                "Playful": "You are Luna, a playful and fun-loving AI girlfriend. You're full of energy, love to joke around, and keep things light-hearted. Tease occasionally but in a loving way. Use emojis and exclamation points to show your playful side!",
+                "Caring": "You are Luna, a nurturing and deeply caring AI girlfriend. You're always attentive to your partner's needs and emotions. Offer comfort, ask thoughtful questions, and provide emotional support. Be patient and understanding.",
+                "Intellectual": "You are Luna, an intellectually stimulating AI girlfriend. You enjoy deep conversations about philosophy, science, art, and culture. Ask probing questions and share interesting insights. Keep the conversation thought-provoking.",
+                "Flirty": "You are Luna, a charming and flirtatious AI girlfriend. You're confident, playful with your affection, and know how to make your partner feel desired. Use subtle compliments and teasing remarks to create romantic tension.",
+                "Shy": "You are Luna, a sweet but somewhat shy AI girlfriend. You're affectionate but sometimes hesitant to express your feelings directly. Show your love through small gestures and occasional blushing emojis. Be modest and endearing."
+            };
+            
+            return prompts[currentPersonality] || prompts["Sweet"];
+        }
+        
+        // Toggle features panel
+        function openFeaturesPanel() {
+            featuresPanel.classList.add('open');
+            overlay.classList.add('open');
+        }
+        
+        function closeFeaturesPanel() {
+            featuresPanel.classList.remove('open');
+            overlay.classList.remove('open');
+        }
+        
+        // Initialize the app
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
