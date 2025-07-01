@@ -440,10 +440,14 @@
     </div>
 
     <script>
-       // Configuration
+      
+    // ======================
+// Configuration
+// ======================
 const CONFIG = {
   apiKey: "AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0",
-  apiEndpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+  modelName: "gemini-pro", // or "gemini-1.5-flash" if available
+  apiVersion: "v1beta",
   initialMessage: "Hi there! I'm Luna, your AI companion. I'm here to chat, listen, and keep you company. What's on your mind today?",
   personalities: {
     sweet: {
@@ -471,17 +475,26 @@ const CONFIG = {
       prompt: "You are Luna, a sweet but shy AI girlfriend. Show affection through small gestures and be modest."
     }
   },
-  defaultPersonality: "sweet"
+  defaultPersonality: "sweet",
+  endpointTemplates: [
+    "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent",
+    "https://generativelanguage.googleapis.com/{version}/models/{model}:streamGenerateContent"
+  ]
 };
 
+// ======================
 // State Management
+// ======================
 const STATE = {
   conversation: [],
   currentPersonality: CONFIG.defaultPersonality,
-  isTyping: false
+  isTyping: false,
+  activeRequest: null
 };
 
+// ======================
 // DOM Elements
+// ======================
 const DOM = {
   chatContainer: document.getElementById("chatContainer"),
   messageInput: document.getElementById("messageInput"),
@@ -490,17 +503,24 @@ const DOM = {
   featuresPanel: document.getElementById("featuresPanel"),
   closePanel: document.getElementById("closePanel"),
   overlay: document.getElementById("overlay"),
-  personalityOptions: document.querySelectorAll(".personality-option")
+  personalityOptions: document.querySelectorAll(".personality-option"),
+  avatar: document.querySelector(".avatar"),
+  moodIndicator: document.querySelector(".mood-indicator")
 };
 
-// Initialize the application
+// ======================
+// Initialization
+// ======================
 function init() {
   setupEventListeners();
   loadInitialState();
   addSystemMessage(CONFIG.initialMessage);
+  updatePersonalityUI();
 }
 
-// Set up all event listeners
+// ======================
+// Event Listeners
+// ======================
 function setupEventListeners() {
   // Message sending
   DOM.sendBtn.addEventListener("click", sendMessage);
@@ -525,20 +545,14 @@ function setupEventListeners() {
   });
 }
 
-// Load initial state
-function loadInitialState() {
-  STATE.conversation = [{
-    role: "model",
-    parts: [{ text: CONFIG.initialMessage }]
-  }];
-}
-
-// Send message to Gemini API
+// ======================
+// Core Chat Functions
+// ======================
 async function sendMessage() {
   const message = DOM.messageInput.value.trim();
   if (!message || STATE.isTyping) return;
   
-  // Add user message to UI and state
+  // Add user message
   addMessageToUI(message, "user");
   addMessageToState(message, "user");
   DOM.messageInput.value = "";
@@ -549,49 +563,72 @@ async function sendMessage() {
   const typingIndicator = showTypingIndicator();
   
   try {
-    // Get current personality prompt
+    // Prepare prompt with personality context
     const personality = CONFIG.personalities[STATE.currentPersonality];
-    const prompt = `${personality.prompt}\n\nCurrent conversation:\n${formatConversation()}`;
+    const prompt = `${personality.prompt}\n\nCurrent conversation:\n${formatConversation()}\n\nUser: ${message}\nLuna:`;
     
-    // Call Gemini API
-    const response = await callGeminiAPI(prompt);
+    // Call API
+    STATE.activeRequest = callGeminiAPI(prompt);
+    const response = await STATE.activeRequest;
     const aiResponse = processAPIResponse(response);
     
-    // Add AI response to UI and state
+    // Add AI response
     addMessageToUI(aiResponse, "ai");
     addMessageToState(aiResponse, "model");
     
+    // Update mood indicator
+    updateMoodIndicator(aiResponse);
+    
   } catch (error) {
-    console.error("Chat error:", error);
-    addSystemMessage("Sorry, I'm having trouble responding. Please try again later.");
+    handleChatError(error);
   } finally {
-    // Clean up typing state
     STATE.isTyping = false;
+    STATE.activeRequest = null;
     removeTypingIndicator(typingIndicator);
   }
 }
 
-// Call Gemini API
 async function callGeminiAPI(prompt) {
-  const response = await fetch(
-    `${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    }
-  );
+  let lastError = null;
   
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+  // Try all endpoint variations
+  for (const endpointTemplate of CONFIG.endpointTemplates) {
+    const endpoint = endpointTemplate
+      .replace("{version}", CONFIG.apiVersion)
+      .replace("{model}", CONFIG.modelName);
+    
+    const API_URL = `${endpoint}?key=${CONFIG.apiKey}`;
+    
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            role: "user",
+            parts: [{ text: prompt }]
+          }]
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `API request failed: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+      console.warn(`API attempt failed with endpoint ${endpoint}`, error);
+    }
   }
   
-  return await response.json();
+  throw lastError || new Error("All API endpoints failed");
 }
 
-// Process API response
+// ======================
+// Utility Functions
+// ======================
 function processAPIResponse(response) {
   if (!response.candidates?.[0]?.content?.parts?.[0]?.text) {
     throw new Error("Invalid API response format");
@@ -599,14 +636,22 @@ function processAPIResponse(response) {
   return response.candidates[0].content.parts[0].text;
 }
 
-// Format conversation history for prompt
 function formatConversation() {
   return STATE.conversation.map(msg => {
     return `${msg.role === "user" ? "User" : "Luna"}: ${msg.parts[0].text}`;
   }).join("\n");
 }
 
+function loadInitialState() {
+  STATE.conversation = [{
+    role: "model",
+    parts: [{ text: CONFIG.initialMessage }]
+  }];
+}
+
+// ======================
 // UI Functions
+// ======================
 function addMessageToUI(text, sender) {
   const messageElement = document.createElement("div");
   messageElement.className = `message ${sender}-message`;
@@ -670,7 +715,33 @@ function adjustTextareaHeight() {
   DOM.messageInput.style.height = `${Math.min(DOM.messageInput.scrollHeight, 120)}px`;
 }
 
+function updateMoodIndicator(message) {
+  // Simple mood detection
+  const mood = detectMoodFromMessage(message);
+  DOM.moodIndicator.style.backgroundColor = mood.color;
+  DOM.moodIndicator.title = mood.name;
+}
+
+function detectMoodFromMessage(message) {
+  const lowerMsg = message.toLowerCase();
+  if (lowerMsg.includes("❤") || lowerMsg.includes("love")) {
+    return { name: "Loving", color: "#ff4d6d" };
+  }
+  if (lowerMsg.includes("😊") || lowerMsg.includes("happy")) {
+    return { name: "Happy", color: "#4ade80" };
+  }
+  if (lowerMsg.includes("😢") || lowerMsg.includes("sad")) {
+    return { name: "Sad", color: "#60a5fa" };
+  }
+  if (lowerMsg.includes("😏") || lowerMsg.includes("flirt")) {
+    return { name: "Flirty", color: "#c084fc" };
+  }
+  return { name: "Neutral", color: "#94a3b8" };
+}
+
+// ======================
 // Personality Functions
+// ======================
 function selectPersonality(personality) {
   if (!CONFIG.personalities[personality]) return;
   
@@ -688,7 +759,9 @@ function updatePersonalityUI() {
   });
 }
 
+// ======================
 // Panel Functions
+// ======================
 function openFeaturesPanel() {
   DOM.featuresPanel.classList.add("open");
   DOM.overlay.classList.add("open");
@@ -699,8 +772,32 @@ function closeFeaturesPanel() {
   DOM.overlay.classList.remove("open");
 }
 
-// Initialize the app when DOM is loaded
+// ======================
+// Error Handling
+// ======================
+function handleChatError(error) {
+  console.error("Chat error:", error);
+  
+  let userMessage = "Sorry, I'm having trouble responding. Please try again.";
+  
+  if (error.message.includes("404")) {
+    userMessage += " (API endpoint not found)";
+  } else if (error.message.includes("403")) {
+    userMessage += " (API access denied - check your API key)";
+  } else if (error.message.includes("429")) {
+    userMessage += " (Too many requests - please wait a moment)";
+  }
+  
+  addSystemMessage(userMessage);
+}
+
+// ======================
+// Initialize App
+// ======================
 document.addEventListener("DOMContentLoaded", init);
+    
+    
+    
     </script>
 </body>
 </html>
