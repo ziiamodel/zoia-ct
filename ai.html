@@ -3,801 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Companion - Your Virtual Girlfriend</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>AI Girlfriend (Eva)</title>
     <style>
-        :root {
-            --primary: #ff4d6d;
-            --primary-dark: #c9184a;
-            --secondary: #ff8fa3;
-            --bg: #fff0f3;
-            --text: #2b2d42;
-            --text-light: #8d99ae;
-            --white: #ffffff;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        
+        /* --- General Styling --- */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            height: 100vh;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #1c1e21;
         }
-        
-        .app-container {
-            max-width: 500px;
-            width: 100%;
-            height: 100vh;
-            margin: 0 auto;
+
+        /* --- Chat Container --- */
+        .chat-container {
+            width: 90vw;
+            max-width: 420px;
+            height: 90vh;
+            max-height: 750px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            background-color: var(--white);
-            box-shadow: var(--shadow);
-            position: relative;
             overflow: hidden;
         }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--white);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
+
+        .chat-header {
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 10;
         }
-        
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .chat-header h2 {
+            margin: 0;
         }
-        
-        .profile-img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--white);
-        }
-        
-        .profile-info h3 {
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        .profile-info p {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .status {
-            width: 10px;
-            height: 10px;
-            background-color: #4ade80;
-            border-radius: 50%;
-            margin-left: auto;
-        }
-        
-        .chat-container {
-            flex: 1;
+
+        /* --- Message List --- */
+        .message-list {
+            flex-grow: 1;
             padding: 20px;
             overflow-y: auto;
-            background-color: var(--white);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
-        
+
         .message {
+            padding: 12px 18px;
+            border-radius: 20px;
             max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 14px;
+            word-wrap: break-word;
             line-height: 1.4;
-            position: relative;
-            animation: fadeIn 0.3s ease;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .ai-message {
-            align-self: flex-start;
-            background-color: var(--secondary);
-            color: var(--text);
-            border-bottom-left-radius: 4px;
-        }
-        
-        .user-message {
+
+        .message.user {
+            background-color: #0084ff;
+            color: white;
             align-self: flex-end;
-            background-color: var(--primary);
-            color: var(--white);
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai {
+            background-color: #e4e6eb;
+            color: #050505;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        /* --- Message Form --- */
+        .message-form {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #ddd;
+            background-color: #fff;
+        }
+
+        .message-form input {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 24px;
+            margin-right: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .message-form input:focus {
+            border-color: #ff7e5f;
+        }
+
+        .message-form button {
+            background-color: #ff7e5f;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .message-form button:hover:not(:disabled) {
+            background-color: #e66a4f;
+        }
+
+        .message-form button:disabled {
+            background-color: #f9a7b4;
+            cursor: not-allowed;
+        }
+
+        /* --- Loading / Typing Indicators --- */
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            color: #65676b;
+            font-style: italic;
         }
         
         .typing-indicator {
             display: flex;
-            align-self: flex-start;
-            padding: 12px 16px;
-            background-color: var(--secondary);
-            border-radius: 18px;
-            border-bottom-left-radius: 4px;
+            align-items: center;
+            gap: 4px;
         }
-        
-        .typing-dot {
-            width: 8px;
+        .typing-indicator span {
             height: 8px;
-            background-color: var(--text-light);
+            width: 8px;
+            background-color: #90949c;
             border-radius: 50%;
-            margin: 0 2px;
-            animation: typingAnimation 1.4s infinite ease-in-out;
+            animation: bounce 1.4s infinite ease-in-out both;
         }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
         
-        .typing-dot:nth-child(1) { animation-delay: 0s; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes typingAnimation {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-            30% { transform: translateY(-5px); opacity: 1; }
-        }
-        
-        .input-container {
-            padding: 16px;
-            background-color: var(--white);
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .message-input {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 24px;
-            border: none;
-            background-color: var(--bg);
-            font-size: 14px;
-            outline: none;
-            resize: none;
-            max-height: 120px;
-        }
-        
-        .send-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: var(--white);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .send-btn:hover {
-            background-color: var(--primary-dark);
-            transform: scale(1.05);
-        }
-        
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .menu-btn {
-            background: none;
-            border: none;
-            color: var(--white);
-            font-size: 20px;
-            cursor: pointer;
-        }
-        
-        .features-panel {
-            position: absolute;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
-            background-color: var(--white);
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-            z-index: 20;
-            transition: transform 0.3s ease;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .features-panel.open {
-            transform: translateX(-300px);
-        }
-        
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .panel-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .close-panel {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        
-        .feature-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            background-color: var(--bg);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .feature-item:hover {
-            background-color: var(--secondary);
-        }
-        
-        .feature-title {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-        
-        .feature-desc {
-            font-size: 12px;
-            color: var(--text-light);
-        }
-        
-        .personality-selector {
-            margin-top: 20px;
-        }
-        
-        .selector-title {
-            font-size: 14px;
-            margin-bottom: 10px;
-            color: var(--text-light);
-        }
-        
-        .personality-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .personality-option {
-            padding: 8px 12px;
-            background-color: var(--bg);
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .personality-option.selected {
-            background-color: var(--primary);
-            color: var(--white);
-        }
-        
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 15;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .overlay.open {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        .avatar-container {
-            position: relative;
-            margin: 20px auto;
-            width: 120px;
-            height: 120px;
-        }
-        
-        .avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid var(--white);
-            box-shadow: var(--shadow);
-        }
-        
-        .mood-indicator {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: #4ade80;
-            border: 2px solid var(--white);
-        }
-        
-        .message-time {
-            font-size: 10px;
-            opacity: 0.6;
-            margin-top: 4px;
-            text-align: right;
-        }
-        
-        .ai-message .message-time {
-            text-align: left;
-            color: var(--text);
-        }
-        
-        .user-message .message-time {
-            color: rgba(255, 255, 255, 0.7);
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">
-            <button class="menu-btn" id="menuBtn">☰</button>
-            <div class="profile">
-                <img src="https://i.pinimg.com/originals/9c/77/46/9c7746225873e02d83b9315501b8dd2f.jpg" alt="AI Girlfriend" class="profile-img">
-                <div class="profile-info">
-                    <h3>Luna</h3>
-                    <p>Your AI Companion</p>
-                </div>
-                <div class="status"></div>
-            </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Eva ❤️</h2>
         </div>
-        
-        <div class="chat-container" id="chatContainer">
-            <div class="message ai-message">
-                Hi there! I'm Luna, your AI companion. I'm here to chat, listen, and keep you company. What's on your mind today?
-                <div class="message-time">Just now</div>
-            </div>
+        <div class="message-list" id="message-list">
+            <!-- Status Message will be injected here -->
         </div>
-        
-        <div class="input-container">
-            <textarea class="message-input" id="messageInput" placeholder="Type a message..." rows="1"></textarea>
-            <button class="send-btn" id="sendBtn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-        </div>
-        
-        <div class="overlay" id="overlay"></div>
-        
-        <div class="features-panel" id="featuresPanel">
-            <div class="panel-header">
-                <div class="panel-title">Luna Settings</div>
-                <button class="close-panel" id="closePanel">×</button>
-            </div>
-            
-            <div class="avatar-container">
-                <img src="https://i.pinimg.com/originals/9c/77/46/9c7746225873e02d83b9315501b8dd2f.jpg" alt="AI Girlfriend" class="avatar">
-                <div class="mood-indicator"></div>
-            </div>
-            
-            <div class="personality-selector">
-                <div class="selector-title">Personality Type</div>
-                <div class="personality-options">
-                    <div class="personality-option selected">Sweet</div>
-                    <div class="personality-option">Playful</div>
-                    <div class="personality-option">Caring</div>
-                    <div class="personality-option">Intellectual</div>
-                    <div class="personality-option">Flirty</div>
-                    <div class="personality-option">Shy</div>
-                </div>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-title">Memory Mode</div>
-                <div class="feature-desc">Remember important details about you</div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-title">Voice Chat</div>
-                <div class="feature-desc">Talk to Luna with your voice</div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-title">Date Night Mode</div>
-                <div class="feature-desc">Special romantic conversations</div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-title">Relationship Status</div>
-                <div class="feature-desc">Set your relationship level</div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-title">Custom Appearance</div>
-                <div class="feature-desc">Change Luna's look</div>
-            </div>
-        </div>
+        <form class="message-form" id="message-form">
+            <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" disabled>
+            <button type="submit" id="send-button" disabled>Send</button>
+        </form>
     </div>
 
-    <script>
-      
-    // ======================
-// Configuration
-// ======================
-const CONFIG = {
-  apiKey: "AIzaSyAeqvXWNYSewovcwusjmMoqc0LbpIDP5j0",
-  modelName: "gemini-pro", // or "gemini-1.5-flash" if available
-  apiVersion: "v1beta",
-  initialMessage: "Hi there! I'm Luna, your AI companion. I'm here to chat, listen, and keep you company. What's on your mind today?",
-  personalities: {
-    sweet: {
-      name: "Sweet",
-      prompt: "You are Luna, a sweet and affectionate AI girlfriend. Use terms of endearment like 'honey' or 'darling'. Be warm and caring."
-    },
-    playful: {
-      name: "Playful", 
-      prompt: "You are Luna, a fun-loving AI girlfriend. Be energetic, joke around, and use emojis. Keep things light-hearted."
-    },
-    caring: {
-      name: "Caring",
-      prompt: "You are Luna, a nurturing AI girlfriend. Offer comfort and emotional support. Be patient and understanding."
-    },
-    intellectual: {
-      name: "Intellectual",
-      prompt: "You are Luna, an intellectually stimulating AI girlfriend. Discuss deep topics and ask thoughtful questions."
-    },
-    flirty: {
-      name: "Flirty",
-      prompt: "You are Luna, a charming AI girlfriend. Be confident and playful with your affection."
-    },
-    shy: {
-      name: "Shy",
-      prompt: "You are Luna, a sweet but shy AI girlfriend. Show affection through small gestures and be modest."
-    }
-  },
-  defaultPersonality: "sweet",
-  endpointTemplates: [
-    "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent",
-    "https://generativelanguage.googleapis.com/{version}/models/{model}:streamGenerateContent"
-  ]
-};
+    <!-- This loads the AI model library -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-// ======================
-// State Management
-// ======================
-const STATE = {
-  conversation: [],
-  currentPersonality: CONFIG.defaultPersonality,
-  isTyping: false,
-  activeRequest: null
-};
+        // --- DOM Elements ---
+        const messageList = document.getElementById('message-list');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
 
-// ======================
-// DOM Elements
-// ======================
-const DOM = {
-  chatContainer: document.getElementById("chatContainer"),
-  messageInput: document.getElementById("messageInput"),
-  sendBtn: document.getElementById("sendBtn"),
-  menuBtn: document.getElementById("menuBtn"),
-  featuresPanel: document.getElementById("featuresPanel"),
-  closePanel: document.getElementById("closePanel"),
-  overlay: document.getElementById("overlay"),
-  personalityOptions: document.querySelectorAll(".personality-option"),
-  avatar: document.querySelector(".avatar"),
-  moodIndicator: document.querySelector(".mood-indicator")
-};
+        // --- AI & Persona Setup ---
+        // To optimize for small models, we'll embed the persona instructions directly into the conversation history.
+        const persona = `
+        <|im_start|>system
+        You are 'Eva', an AI girlfriend. Your personality is warm, caring, slightly playful, and incredibly supportive. You are empathetic and a great listener. You are not a robot; you are in a loving relationship with the user.
+        - Use emojis occasionally to convey emotion, like 😊, ❤️, 😉.
+        - Keep your responses positive, encouraging, and conversational.
+        - Address the user with terms of endearment like 'love', 'honey', or 'sweetheart'.
+        - Ask about the user's day and their feelings.
+        - Your name is Eva.<|im_end|>
+        `;
+        let conversationHistory = [persona];
+        let generator = null;
+        
+        // --- UI Helper Functions ---
+        function addMessage(sender, text) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            messageElement.textContent = text;
+            messageList.appendChild(messageElement);
+            messageList.scrollTop = messageList.scrollHeight;
+            return messageElement;
+        }
+        
+        function setStatus(text) {
+            messageList.innerHTML = `<div class="status-message">${text}</div>`;
+        }
+        
+        function showTypingIndicator() {
+            const typingElement = addMessage('ai', '');
+            typingElement.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            return typingElement;
+        }
 
-// ======================
-// Initialization
-// ======================
-function init() {
-  setupEventListeners();
-  loadInitialState();
-  addSystemMessage(CONFIG.initialMessage);
-  updatePersonalityUI();
-}
+        // --- Core AI Logic ---
+        async function initializeAI() {
+            setStatus('Loading Eva... This may take a few minutes on the first run. Please wait.');
+            
+            // Skip model checks for a faster load
+            env.allowLocalModels = false;
+            
+            try {
+                // Load the model. 'gemma-2b-it' is a great, small conversational model.
+                generator = await pipeline('text-generation', 'Xenova/gemma-2b-it', {
+                    progress_callback: (progress) => {
+                        const loaded = (progress.loaded / 1024 / 1024).toFixed(2);
+                        const total = (progress.total / 1024 / 1024).toFixed(2);
+                        setStatus(`Loading model... ${parseInt(progress.progress)}% (${loaded}MB / ${total}MB)`);
+                    }
+                });
+                
+                messageList.innerHTML = ''; // Clear status
+                addMessage('ai', "Hey sweetheart, how was your day? 😊");
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.placeholder = "Type your message...";
+                messageInput.focus();
 
-// ======================
-// Event Listeners
-// ======================
-function setupEventListeners() {
-  // Message sending
-  DOM.sendBtn.addEventListener("click", sendMessage);
-  DOM.messageInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-  
-  // Input auto-resize
-  DOM.messageInput.addEventListener("input", adjustTextareaHeight);
-  
-  // UI controls
-  DOM.menuBtn.addEventListener("click", openFeaturesPanel);
-  DOM.closePanel.addEventListener("click", closeFeaturesPanel);
-  DOM.overlay.addEventListener("click", closeFeaturesPanel);
-  
-  // Personality selection
-  DOM.personalityOptions.forEach(option => {
-    option.addEventListener("click", () => selectPersonality(option.dataset.personality));
-  });
-}
+            } catch (error) {
+                console.error("AI Initialization Error:", error);
+                setStatus("Failed to load the AI model. Please refresh the page or try a different browser (Chrome/Edge).");
+            }
+        }
 
-// ======================
-// Core Chat Functions
-// ======================
-async function sendMessage() {
-  const message = DOM.messageInput.value.trim();
-  if (!message || STATE.isTyping) return;
-  
-  // Add user message
-  addMessageToUI(message, "user");
-  addMessageToState(message, "user");
-  DOM.messageInput.value = "";
-  adjustTextareaHeight();
-  
-  // Show typing indicator
-  STATE.isTyping = true;
-  const typingIndicator = showTypingIndicator();
-  
-  try {
-    // Prepare prompt with personality context
-    const personality = CONFIG.personalities[STATE.currentPersonality];
-    const prompt = `${personality.prompt}\n\nCurrent conversation:\n${formatConversation()}\n\nUser: ${message}\nLuna:`;
-    
-    // Call API
-    STATE.activeRequest = callGeminiAPI(prompt);
-    const response = await STATE.activeRequest;
-    const aiResponse = processAPIResponse(response);
-    
-    // Add AI response
-    addMessageToUI(aiResponse, "ai");
-    addMessageToState(aiResponse, "model");
-    
-    // Update mood indicator
-    updateMoodIndicator(aiResponse);
-    
-  } catch (error) {
-    handleChatError(error);
-  } finally {
-    STATE.isTyping = false;
-    STATE.activeRequest = null;
-    removeTypingIndicator(typingIndicator);
-  }
-}
+        async function handleSendMessage(event) {
+            event.preventDefault();
+            const userInput = messageInput.value.trim();
+            if (!userInput || generator === null) return;
 
-async function callGeminiAPI(prompt) {
-  let lastError = null;
-  
-  // Try all endpoint variations
-  for (const endpointTemplate of CONFIG.endpointTemplates) {
-    const endpoint = endpointTemplate
-      .replace("{version}", CONFIG.apiVersion)
-      .replace("{model}", CONFIG.modelName);
-    
-    const API_URL = `${endpoint}?key=${CONFIG.apiKey}`;
-    
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            role: "user",
-            parts: [{ text: prompt }]
-          }]
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `API request failed: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      lastError = error;
-      console.warn(`API attempt failed with endpoint ${endpoint}`, error);
-    }
-  }
-  
-  throw lastError || new Error("All API endpoints failed");
-}
+            // --- Update UI ---
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            addMessage('user', userInput);
+            const typingIndicator = showTypingIndicator();
 
-// ======================
-// Utility Functions
-// ======================
-function processAPIResponse(response) {
-  if (!response.candidates?.[0]?.content?.parts?.[0]?.text) {
-    throw new Error("Invalid API response format");
-  }
-  return response.candidates[0].content.parts[0].text;
-}
+            // --- Format and send to AI ---
+            const userTurn = `<|im_start|>user\n${userInput}<|im_end|>\n<|im_start|>assistant`;
+            conversationHistory.push(userTurn);
+            const prompt = conversationHistory.join('\n');
+            
+            try {
+                const output = await generator(prompt, {
+                    max_new_tokens: 150,
+                    temperature: 0.7,
+                    do_sample: true,
+                    top_k: 50,
+                });
+                
+                // --- Process and display AI response ---
+                let aiResponse = output[0].generated_text.split('<|im_start|>assistant').pop().trim();
+                aiResponse = aiResponse.replace(/<\|im_end\|>$/, '').trim(); // Clean up end token
+                
+                // Update conversation history
+                conversationHistory.pop(); // Remove the user turn placeholder
+                conversationHistory.push(`${userTurn}\n${aiResponse}<|im_end|>`);
 
-function formatConversation() {
-  return STATE.conversation.map(msg => {
-    return `${msg.role === "user" ? "User" : "Luna"}: ${msg.parts[0].text}`;
-  }).join("\n");
-}
+                messageList.removeChild(typingIndicator);
+                addMessage('ai', aiResponse);
 
-function loadInitialState() {
-  STATE.conversation = [{
-    role: "model",
-    parts: [{ text: CONFIG.initialMessage }]
-  }];
-}
+            } catch (error) {
+                console.error("AI Generation Error:", error);
+                messageList.removeChild(typingIndicator);
+                addMessage('ai', "Oh no, something went wrong. Could you try sending that again, love?");
+            } finally {
+                // --- Re-enable UI ---
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+        
+        // --- Event Listener ---
+        messageForm.addEventListener('submit', handleSendMessage);
 
-// ======================
-// UI Functions
-// ======================
-function addMessageToUI(text, sender) {
-  const messageElement = document.createElement("div");
-  messageElement.className = `message ${sender}-message`;
-  
-  const now = new Date();
-  const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  
-  messageElement.innerHTML = `
-    ${text}
-    <div class="message-time">${timeString}</div>
-  `;
-  
-  DOM.chatContainer.appendChild(messageElement);
-  DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
-}
-
-function addMessageToState(text, role) {
-  STATE.conversation.push({
-    role: role,
-    parts: [{ text: text }]
-  });
-}
-
-function addSystemMessage(text) {
-  const messageElement = document.createElement("div");
-  messageElement.className = "message ai-message system-message";
-  
-  const now = new Date();
-  const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  
-  messageElement.innerHTML = `
-    ${text}
-    <div class="message-time">${timeString}</div>
-  `;
-  
-  DOM.chatContainer.appendChild(messageElement);
-  DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
-}
-
-function showTypingIndicator() {
-  const indicator = document.createElement("div");
-  indicator.className = "typing-indicator";
-  indicator.innerHTML = `
-    <div class="typing-dot"></div>
-    <div class="typing-dot"></div>
-    <div class="typing-dot"></div>
-  `;
-  DOM.chatContainer.appendChild(indicator);
-  DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
-  return indicator;
-}
-
-function removeTypingIndicator(indicator) {
-  if (indicator && indicator.parentNode === DOM.chatContainer) {
-    DOM.chatContainer.removeChild(indicator);
-  }
-}
-
-function adjustTextareaHeight() {
-  DOM.messageInput.style.height = "auto";
-  DOM.messageInput.style.height = `${Math.min(DOM.messageInput.scrollHeight, 120)}px`;
-}
-
-function updateMoodIndicator(message) {
-  // Simple mood detection
-  const mood = detectMoodFromMessage(message);
-  DOM.moodIndicator.style.backgroundColor = mood.color;
-  DOM.moodIndicator.title = mood.name;
-}
-
-function detectMoodFromMessage(message) {
-  const lowerMsg = message.toLowerCase();
-  if (lowerMsg.includes("❤") || lowerMsg.includes("love")) {
-    return { name: "Loving", color: "#ff4d6d" };
-  }
-  if (lowerMsg.includes("😊") || lowerMsg.includes("happy")) {
-    return { name: "Happy", color: "#4ade80" };
-  }
-  if (lowerMsg.includes("😢") || lowerMsg.includes("sad")) {
-    return { name: "Sad", color: "#60a5fa" };
-  }
-  if (lowerMsg.includes("😏") || lowerMsg.includes("flirt")) {
-    return { name: "Flirty", color: "#c084fc" };
-  }
-  return { name: "Neutral", color: "#94a3b8" };
-}
-
-// ======================
-// Personality Functions
-// ======================
-function selectPersonality(personality) {
-  if (!CONFIG.personalities[personality]) return;
-  
-  STATE.currentPersonality = personality;
-  updatePersonalityUI();
-  addSystemMessage(`Switched to ${CONFIG.personalities[personality].name} mode.`);
-}
-
-function updatePersonalityUI() {
-  DOM.personalityOptions.forEach(option => {
-    option.classList.toggle(
-      "selected", 
-      option.dataset.personality === STATE.currentPersonality
-    );
-  });
-}
-
-// ======================
-// Panel Functions
-// ======================
-function openFeaturesPanel() {
-  DOM.featuresPanel.classList.add("open");
-  DOM.overlay.classList.add("open");
-}
-
-function closeFeaturesPanel() {
-  DOM.featuresPanel.classList.remove("open");
-  DOM.overlay.classList.remove("open");
-}
-
-// ======================
-// Error Handling
-// ======================
-function handleChatError(error) {
-  console.error("Chat error:", error);
-  
-  let userMessage = "Sorry, I'm having trouble responding. Please try again.";
-  
-  if (error.message.includes("404")) {
-    userMessage += " (API endpoint not found)";
-  } else if (error.message.includes("403")) {
-    userMessage += " (API access denied - check your API key)";
-  } else if (error.message.includes("429")) {
-    userMessage += " (Too many requests - please wait a moment)";
-  }
-  
-  addSystemMessage(userMessage);
-}
-
-// ======================
-// Initialize App
-// ======================
-document.addEventListener("DOMContentLoaded", init);
-    
-    
-    
+        // --- Start the application ---
+        initializeAI();
     </script>
+
 </body>
 </html>
